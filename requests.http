@@ -1,0 +1,29 @@
+### Get all users
+GET http://localhost:9080/gym-training/api/users
+
+### Get a single user by ID
+GET http://localhost:9080/gym-training/api/users/81e1c2a9-7f57-439b-b53d-6db88b071e4e
+
+### Get non-existent user
+GET http://localhost:9080/gym-training/api/users/00000000-0000-0000-0000-000000000000
+
+### Upload/update user avatar
+# Pamiętaj, aby podmienić <ścieżka_do_pliku> na poprawną ścieżkę do pliku graficznego na Twoim komputerze
+PUT http://localhost:9080/gym-training/api/users/81e1c2a9-7f57-439b-b53d-6db88b071e4e/avatar
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="avatar"; filename="avatar.png"
+Content-Type: image/png
+
+< /path/to/your/avatar.png
+--boundary--
+
+### Get user avatar
+GET http://localhost:9080/gym-training/api/users/81e1c2a9-7f57-439b-b53d-6db88b071e4e/avatar
+
+### Delete user avatar
+DELETE http://localhost:9080/gym-training/api/users/81e1c2a9-7f57-439b-b53d-6db88b071e4e/avatar
+
+### Get deleted avatar (should return 404)
+GET http://localhost:9080/gym-training/api/users/81e1c2a9-7f57-439b-b53d-6db88b071e4e/avatar

@@ -1,12 +1,9 @@
-package com.example.lab0;
+package com.example.lab0.user.dto;
 
 import lombok.*;
 
-import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
-
 
 @Getter
 @Setter
@@ -14,18 +11,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
-@EqualsAndHashCode(of = "id")
-public class User implements Serializable {
-
+@EqualsAndHashCode
+public class GetUserResponse {
     private UUID id;
-
     private String username;
-
     private String email;
-
     private LocalDate registrationDate;
-
-    @ToString.Exclude
-    private List<WorkoutSession> sessions;
-
 }

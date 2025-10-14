@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0"
+         metadata-complete="false">
+
+    <context-param>
+        <param-name>avatar.directory</param-name>
+        <param-value>/tmp/avatars</param-value>
+    </context-param>
+
+    <listener>
+        <listener-class>com.example.lab0.configuration.CreateDataStore</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.example.lab0.configuration.CreateRepositories</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.example.lab0.configuration.CreateServices</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.example.lab0.configuration.CreateControllers</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.example.lab0.configuration.InitializedData</listener-class>
+    </listener>
+
+</web-app>
