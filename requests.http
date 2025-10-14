@@ -1,29 +1,65 @@
 ### Get all users
 GET http://localhost:9080/gym-training/api/users
 
-### Get a single user by ID
-GET http://localhost:9080/gym-training/api/users/81e1c2a9-7f57-439b-b53d-6db88b071e4e
+### Get single user (John Doe)
+GET http://localhost:9080/gym-training/api/users/c4804e0f-769e-4ab9-9ebe-0578fb4f00a1
 
-### Get non-existent user
-GET http://localhost:9080/gym-training/api/users/00000000-0000-0000-0000-000000000000
+### Get all workout types
+GET http://localhost:9080/gym-training/api/workout-types
 
-### Upload/update user avatar
-# Pamiętaj, aby podmienić <ścieżka_do_pliku> na poprawną ścieżkę do pliku graficznego na Twoim komputerze
-PUT http://localhost:9080/gym-training/api/users/81e1c2a9-7f57-439b-b53d-6db88b071e4e/avatar
+### Get all workout sessions for a specific type (Strength)
+GET http://localhost:9080/gym-training/api/workout-types/f5875513-bf7b-4ae1-b8a5-5b70a1b90e76/workout-sessions
+
+### Get all workout sessions for a specific user (John Doe)
+GET http://localhost:9080/gym-training/api/users/c4804e0f-769e-4ab9-9ebe-0578fb4f00a1/workout-sessions
+
+### Get single workout session (Morning Run)
+GET http://localhost:9080/gym-training/api/workout-sessions/525d3e7b-bb1f-4c13-bf17-926d1a12e4c0
+
+### Get non-existent session
+GET http://localhost:9080/gym-training/api/workout-sessions/00000000-0000-0000-0000-000000000000
+
+### Create new workout session
+PUT http://localhost:9080/gym-training/api/workout-sessions/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+
+{
+  "name": "Evening Yoga",
+  "workoutType": "b8387964-054d-4874-9177-3e143681423c",
+  "user": "c4804e0f-769e-4ab9-9ebe-0578fb4f00a1"
+}
+
+### Get newly created session
+GET http://localhost:9080/gym-training/api/workout-sessions/123e4567-e89b-12d3-a456-426614174000
+
+### Upload/update image for a workout session
+# UWAGA: Podmień <sciezka_do_pliku> na poprawną ścieżkę do pliku graficznego
+PUT http://localhost:9080/gym-training/api/workout-sessions/123e4567-e89b-12d3-a456-426614174000/image
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
-Content-Disposition: form-data; name="avatar"; filename="avatar.png"
+Content-Disposition: form-data; name="image"; filename="yoga.png"
 Content-Type: image/png
 
-< /path/to/your/avatar.png
+< <sciezka_do_pliku>
 --boundary--
 
-### Get user avatar
-GET http://localhost:9080/gym-training/api/users/81e1c2a9-7f57-439b-b53d-6db88b071e4e/avatar
+### Get the image for the workout session
+GET http://localhost:9080/gym-training/api/workout-sessions/123e4567-e89b-12d3-a456-426614174000/image
 
-### Delete user avatar
-DELETE http://localhost:9080/gym-training/api/users/81e1c2a9-7f57-439b-b53d-6db88b071e4e/avatar
+### Update workout session
+PATCH http://localhost:9080/gym-training/api/workout-sessions/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
 
-### Get deleted avatar (should return 404)
-GET http://localhost:9080/gym-training/api/users/81e1c2a9-7f57-439b-b53d-6db88b071e4e/avatar
+{
+  "name": "Advanced Evening Yoga"
+}
+
+### Get updated session
+GET http://localhost:9080/gym-training/api/workout-sessions/123e4567-e89b-12d3-a456-426614174000
+
+### Delete workout session
+DELETE http://localhost:9080/gym-training/api/workout-sessions/123e4567-e89b-12d3-a456-426614174000
+
+### Get deleted session (should be 404)
+GET http://localhost:9080/gym-training/api/workout-sessions/123e4567-e89b-12d3-a456-426614174000

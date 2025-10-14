@@ -1,9 +1,6 @@
-package com.example.lab0;
+package com.example.lab0.workouttype.dto;
 
 import lombok.*;
-
-import java.io.Serializable;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -11,18 +8,9 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@ToString
-@EqualsAndHashCode(of = "id")
-public class WorkoutType implements Serializable {
-
+public class GetWorkoutTypeResponse {
     private UUID id;
-
     private String name;
-
     private String description;
-
     private int intensityLevel;
-
-    @ToString.Exclude
-    private List<WorkoutSession> sessions;
 }

@@ -20,13 +20,15 @@ public class UserService {
 
     public UserService(UserRepository repository, ServletContext context) {
         this.repository = repository;
-        String avatarDir = context.getInitParameter("avatar.directory");
-        this.avatarDirectory = Paths.get(avatarDir);
+        // ZMIANA: Użyj "image.directory" zamiast "avatar.directory"
+        String imageDir = context.getInitParameter("image.directory");
+        this.avatarDirectory = Paths.get(imageDir);
+
         if (!Files.exists(avatarDirectory)) {
             try {
                 Files.createDirectories(avatarDirectory);
             } catch (IOException e) {
-                throw new IllegalStateException("Could not create avatar directory", e);
+                throw new IllegalStateException("Could not create image directory", e);
             }
         }
     }

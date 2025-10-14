@@ -6,8 +6,8 @@
          metadata-complete="false">
 
     <context-param>
-        <param-name>avatar.directory</param-name>
-        <param-value>/tmp/avatars</param-value>
+        <param-name>avatars.directory</param-name>
+        <param-value>src/main/resources/configuration/avatars</param-value>
     </context-param>
 
     <listener>
