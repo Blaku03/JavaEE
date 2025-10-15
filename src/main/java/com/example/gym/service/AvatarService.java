@@ -19,11 +19,7 @@ public class AvatarService {
     }
 
     public Path getAvatar(UUID userId) {
-        Path avatarPath = avatarRepository.find(userId);
-        if (avatarPath == null) {
-            return avatarRepository.getDefaultAvatar();
-        }
-        return avatarPath;
+        return avatarRepository.find(userId);
     }
 
     public void deleteAvatar(UUID userId) throws IOException {

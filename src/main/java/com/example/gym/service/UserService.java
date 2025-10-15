@@ -7,7 +7,7 @@ import com.example.gym.repository.UserRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,7 +21,7 @@ public class UserService {
         this.avatarService = avatarService;
     }
 
-    public List<User> findAll() {
+    public Collection<User> findAll() {
         return userRepository.findAll();
     }
 
@@ -46,6 +46,7 @@ public class UserService {
             User user = userOptional.get();
             user.setName(request.getName());
             user.setEmail(request.getEmail());
+            userRepository.save(user); // Zapisujemy zaktualizowanego użytkownika
         }
         return userOptional;
     }
@@ -55,9 +56,9 @@ public class UserService {
         if (userOptional.isPresent()) {
             userRepository.delete(userOptional.get());
             try {
+                // Przy usuwaniu użytkownika, usuwamy też jego avatar
                 avatarService.deleteAvatar(id);
             } catch (IOException e) {
-                // Log the error, but proceed with user deletion
                 e.printStackTrace();
             }
             return true;

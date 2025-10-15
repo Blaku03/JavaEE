@@ -1,6 +1,5 @@
 package com.example.gym.controller;
 
-import com.example.gym.datastore.DataStore;
 import com.example.gym.model.User;
 import com.example.gym.repository.AvatarRepository;
 import com.example.gym.repository.UserRepository;
@@ -32,17 +31,16 @@ public class AvatarServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        DataStore dataStore = (DataStore) getServletContext().getAttribute("dataStore");
-        UserRepository userRepository = new UserRepository(dataStore);
+        UserRepository userRepository = UserRepository.getInstance();
         this.avatarService = new AvatarService(new AvatarRepository());
-        this.userService = new UserService(userRepository, this.avatarService); // Poprawione tworzenie UserService
+        this.userService = new UserService(userRepository, this.avatarService);
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo();
         if (pathInfo == null || pathInfo.equals("/")) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required in the path.");
             return;
         }
 
@@ -56,7 +54,7 @@ public class AvatarServlet extends HttpServlet {
                 resp.setContentType("image/png");
                 Files.copy(avatarPath, resp.getOutputStream());
             } else {
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Avatar not found");
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Avatar not found for this user.");
             }
         } catch (IllegalArgumentException e) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid UUID format");
@@ -67,7 +65,7 @@ public class AvatarServlet extends HttpServlet {
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String pathInfo = req.getPathInfo();
         if (pathInfo == null || pathInfo.equals("/")) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required in the path.");
             return;
         }
 
@@ -75,7 +73,6 @@ public class AvatarServlet extends HttpServlet {
             String userIdString = pathInfo.substring(1);
             UUID userId = UUID.fromString(userIdString);
 
-            // Poprawiona obsługa Optional
             Optional<User> userOptional = userService.findById(userId);
             if (userOptional.isEmpty()) {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
@@ -84,7 +81,7 @@ public class AvatarServlet extends HttpServlet {
 
             Part filePart = req.getPart("avatar");
             if (filePart == null) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing 'avatar' part");
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing 'avatar' part in multipart request.");
                 return;
             }
 
@@ -99,10 +96,10 @@ public class AvatarServlet extends HttpServlet {
     }
 
     @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo();
         if (pathInfo == null || pathInfo.equals("/")) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required in the path.");
             return;
         }
 
@@ -110,7 +107,6 @@ public class AvatarServlet extends HttpServlet {
             String userIdString = pathInfo.substring(1);
             UUID userId = UUID.fromString(userIdString);
 
-            // Poprawiona obsługa Optional
             Optional<User> userOptional = userService.findById(userId);
             if (userOptional.isEmpty()) {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");

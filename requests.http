@@ -1,30 +1,26 @@
-### Ustawienie zmiennych
-@baseUrl = http://localhost:9080/gym-training/api
-@userId1 = f8c3de3d-1fea-4d7c-a8b0-29f63c4c3451
-@userId4 = f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454
-
 ###
 ### USER API - Pełny cykl testowy
 ###
 
 # 1. Pobierz listę wszystkich użytkowników
 # Oczekiwany status: 200 OK
-GET {{baseUrl}}/users
+GET http://localhost:9080/gym-training/api/users
 Accept: application/json
 
 ###
 
-# 2. Pobierz szczegóły konkretnego użytkownika
+# 2. Pobierz szczegóły konkretnego, istniejącego użytkownika
 # Oczekiwany status: 200 OK
-GET {{baseUrl}}/users/{{userId1}}
+GET http://localhost:9080/gym-training/api/users/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3452
 Accept: application/json
 
 ###
 
 # 3. Utwórz nowego użytkownika
 # Oczekiwany status: 201 Created
-# W odpowiedzi powinniśmy dostać dane nowego użytkownika z wygenerowanym ID
-POST {{baseUrl}}/users
+# UWAGA: Po wykonaniu tego zapytania, skopiuj "id" z odpowiedzi i wklej je w kolejnych zapytaniach,
+# jeśli chcesz testować na nowo utworzonym użytkowniku.
+POST http://localhost:9080/gym-training/api/users
 Content-Type: application/json
 
 {
@@ -36,7 +32,7 @@ Content-Type: application/json
 
 # 4. Zaktualizuj istniejącego użytkownika
 # Oczekiwany status: 204 No Content
-PUT {{baseUrl}}/users/{{userId4}}
+PUT http://localhost:9080/gym-training/api/users/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454
 Content-Type: application/json
 
 {
@@ -47,20 +43,21 @@ Content-Type: application/json
 ###
 
 # 5. Sprawdź, czy dane użytkownika zostały zaktualizowane
-GET {{baseUrl}}/users/{{userId4}}
+# Oczekiwany status: 200 OK
+GET http://localhost:9080/gym-training/api/users/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454
 Accept: application/json
 
 ###
 
 # 6. Usuń użytkownika
 # Oczekiwany status: 204 No Content
-DELETE {{baseUrl}}/users/{{userId1}}
+DELETE http://localhost:9080/gym-training/api/users/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3451
 
 ###
 
-# 7. Sprawdź, czy użytkownik został usunięty
+# 7. Sprawdź, czy użytkownik został usunięty (próba pobrania)
 # Oczekiwany status: 404 Not Found
-GET {{baseUrl}}/users/{{userId1}}
+GET http://localhost:9080/gym-training/api/users/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3451
 Accept: application/json
 
 
@@ -68,20 +65,42 @@ Accept: application/json
 ### AVATAR API - Testowanie
 ###
 
-# 1. Pobierz avatar istniejącego użytkownika
-# Oczekiwany status: 200 OK (powinien zwrócić obrazek)
-GET {{baseUrl}}/avatars/{{userId4}}
+# 1. Pobierz avatar istniejącego użytkownika (powinien mieć avatar z inicjalizacji)
+# Oczekiwany status: 200 OK
+GET http://localhost:9080/gym-training/api/avatars/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3452
 Accept: image/png
 
 ###
 
-# 2. Usuń użytkownika, aby sprawdzić czy jego avatar również zniknął
-# Oczekiwany status: 204 No Content
-DELETE {{baseUrl}}/users/{{userId4}}
+# 2. Spróbuj pobrać avatar dla użytkownika, który nie istnieje
+# (Używamy losowego, ale poprawnego UUID, aby przetestować logikę 404)
+# Oczekiwany status: 404 Not Found
+GET http://localhost:9080/gym-training/api/avatars/00000000-0000-0000-0000-000000000000
+Accept: image/png
 
 ###
 
-# 3. Spróbuj pobrać avatar usuniętego użytkownika
-# Oczekiwany status: 404 Not Found (ponieważ nie ma już ani użytkownika, ani jego avatara)
-GET {{baseUrl}}/avatars/{{userId4}}
+# 3. Zaktualizuj avatar dla istniejącego użytkownika
+# WAŻNE: Zmień ścieżkę <./path/to/your/avatar.png> na poprawną ścieżkę do pliku na Twoim komputerze!
+PUT http://localhost:9080/gym-training/api/avatars/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3453
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="avatar"; filename="avatar.png"
+Content-Type: image/png
+
+< src/main/resources/avatars/uhlbrecht.png
+--boundary--
+
+###
+
+# 4. Usuń avatar użytkownika
+# Oczekiwany status: 204 No Content
+DELETE http://localhost:9080/gym-training/api/avatars/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3453
+
+###
+
+# 5. Sprawdź, czy avatar użytkownika został usunięty (próba pobrania)
+# Oczekiwany status: 404 Not Found
+GET http://localhost:9080/gym-training/api/avatars/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3453
 Accept: image/png
