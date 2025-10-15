@@ -29,7 +29,7 @@ public class WorkoutSessionService {
         this.sessionRepository = sessionRepository;
         this.userRepository = userRepository;
         this.typeRepository = typeRepository;
-        String imageDir = context.getInitParameter("image.directory");
+        String imageDir = context.getInitParameter("avatars.directory");
         this.imageDirectory = Paths.get(imageDir);
         if (!Files.exists(imageDirectory)) {
             try {

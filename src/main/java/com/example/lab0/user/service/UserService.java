@@ -20,8 +20,7 @@ public class UserService {
 
     public UserService(UserRepository repository, ServletContext context) {
         this.repository = repository;
-        // ZMIANA: Użyj "image.directory" zamiast "avatar.directory"
-        String imageDir = context.getInitParameter("image.directory");
+        String imageDir = context.getInitParameter("avatars.directory");
         this.avatarDirectory = Paths.get(imageDir);
 
         if (!Files.exists(avatarDirectory)) {
