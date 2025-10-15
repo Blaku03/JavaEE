@@ -44,8 +44,7 @@ public class UserRepository {
 
     private void initializeAvatars() {
         AvatarRepository avatarRepository = new AvatarRepository();
-        // Nazwy plików avatarów w folderze resources/avatars
-        String[] avatarFiles = {"avatars/calvian.png", "avatars/eloise.png", "avatars/sigrid.png", "avatars/zereni.png"};
+        String[] avatarFiles = {"avatars/img1.jpeg", "avatars/img2.jpeg", "avatars/img3.jpeg", "avatars/img4.jpeg"};
         List<User> userList = new ArrayList<>(users.values());
 
         for (int i = 0; i < userList.size(); i++) {

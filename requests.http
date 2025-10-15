@@ -89,7 +89,7 @@ Content-Type: multipart/form-data; boundary=boundary
 Content-Disposition: form-data; name="avatar"; filename="avatar.png"
 Content-Type: image/png
 
-< src/main/resources/avatars/uhlbrecht.png
+< src/main/resources/avatars/img5.jpeg
 --boundary--
 
 ###
