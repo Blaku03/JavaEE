@@ -51,14 +51,10 @@ public class UserRepository {
             User user = userList.get(i);
             String avatarResourcePath = avatarFiles[i];
 
-            // Używamy ClassLoader'a, aby uzyskać dostęp do zasobu jako strumień (InputStream)
-            // To jest kluczowa zmiana, która sprawia, że kod jest przenośny.
             try (InputStream is = getClass().getClassLoader().getResourceAsStream(avatarResourcePath)) {
                 if (is != null) {
-                    // Przekazujemy strumień danych do repozytorium avatarów, które zapisuje go na dysku
                     avatarRepository.save(user.getId(), is);
                 } else {
-                    // Taki błąd oznacza, że pliku nie ma w folderze `resources/avatars`
                     System.err.println("ERROR: Could not find avatar resource in classpath: " + avatarResourcePath);
                 }
             } catch (IOException e) {

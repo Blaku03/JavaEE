@@ -46,7 +46,7 @@ public class UserService {
             User user = userOptional.get();
             user.setName(request.getName());
             user.setEmail(request.getEmail());
-            userRepository.save(user); // Zapisujemy zaktualizowanego użytkownika
+            userRepository.save(user);
         }
         return userOptional;
     }
@@ -56,7 +56,7 @@ public class UserService {
         if (userOptional.isPresent()) {
             userRepository.delete(userOptional.get());
             try {
-                // Przy usuwaniu użytkownika, usuwamy też jego avatar
+                // Also delete avatar
                 avatarService.deleteAvatar(id);
             } catch (IOException e) {
                 e.printStackTrace();

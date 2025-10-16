@@ -20,7 +20,6 @@ public class AvatarRepository {
                 Files.createDirectories(avatarDirectory);
             }
         } catch (IOException e) {
-            // W środowisku produkcyjnym warto użyć loggera
             e.printStackTrace();
         }
     }
@@ -35,7 +34,7 @@ public class AvatarRepository {
         if (Files.exists(avatarFile)) {
             return avatarFile;
         }
-        return null; // Zwracamy null, jeśli avatar nie istnieje
+        return null;
     }
 
     public void delete(UUID userId) throws IOException {
