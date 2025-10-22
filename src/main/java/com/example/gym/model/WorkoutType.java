@@ -14,7 +14,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WorkoutType implements Serializable {
-    private UUID id;
+    @Builder.Default
+    private UUID id = UUID.randomUUID();
     private String name;
     private String description;
 }

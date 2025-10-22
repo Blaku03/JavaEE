@@ -4,6 +4,8 @@ import com.example.gym.dto.CreateUserRequest;
 import com.example.gym.dto.UpdateUserRequest;
 import com.example.gym.model.User;
 import com.example.gym.repository.UserRepository;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,14 +13,16 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
+@ApplicationScoped
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final AvatarService avatarService;
+    @Inject
+    private UserRepository userRepository;
 
-    public UserService(UserRepository userRepository, AvatarService avatarService) {
-        this.userRepository = userRepository;
-        this.avatarService = avatarService;
+    @Inject
+    private AvatarService avatarService;
+
+    public UserService() {
     }
 
     public Collection<User> findAll() {

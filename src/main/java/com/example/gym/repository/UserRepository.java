@@ -1,6 +1,9 @@
 package com.example.gym.repository;
 
 import com.example.gym.model.User;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,22 +15,19 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
+@ApplicationScoped
 public class UserRepository {
 
-    private static UserRepository instance;
     private final Map<UUID, User> users = new ConcurrentHashMap<>();
 
-    private UserRepository() {
-        initializeTestUsers();
+    @Inject 
+    private AvatarRepository avatarRepository;
+
+    
+    public UserRepository() {
     }
 
-    public static synchronized UserRepository getInstance() {
-        if (instance == null) {
-            instance = new UserRepository();
-        }
-        return instance;
-    }
-
+    @PostConstruct
     private void initializeTestUsers() {
         User user1 = User.builder().id(UUID.fromString("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3451")).name("John Doe").email("john.doe@example.com").workoutSessions(new ArrayList<>()).build();
         User user2 = User.builder().id(UUID.fromString("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3452")).name("Jane Smith").email("jane.smith@example.com").workoutSessions(new ArrayList<>()).build();
@@ -39,11 +39,13 @@ public class UserRepository {
         users.put(user3.getId(), user3);
         users.put(user4.getId(), user4);
 
+        System.out.println("UserRepository: Załadowano 4 testowych użytkowników.");
+
         initializeAvatars();
     }
 
+
     private void initializeAvatars() {
-        AvatarRepository avatarRepository = new AvatarRepository();
         String[] avatarFiles = {"avatars/img1.jpeg", "avatars/img2.jpeg", "avatars/img3.jpeg", "avatars/img4.jpeg"};
         List<User> userList = new ArrayList<>(users.values());
 
@@ -61,6 +63,7 @@ public class UserRepository {
                 e.printStackTrace();
             }
         }
+        System.out.println("UserRepository: Zakończono inicjalizację avatarów.");
     }
 
     public Collection<User> findAll() {

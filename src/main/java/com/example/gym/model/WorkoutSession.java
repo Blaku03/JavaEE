@@ -15,7 +15,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WorkoutSession implements Serializable {
-    private UUID id;
+    @Builder.Default
+    private UUID id = UUID.randomUUID();
     private WorkoutType workoutType;
     private LocalDateTime startTime;
     private LocalDateTime endTime;

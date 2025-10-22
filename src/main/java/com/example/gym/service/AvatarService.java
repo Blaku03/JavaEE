@@ -1,17 +1,21 @@
 package com.example.gym.service;
 
 import com.example.gym.repository.AvatarRepository;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.UUID;
 
+@ApplicationScoped
 public class AvatarService {
 
-    private final AvatarRepository avatarRepository;
+    @Inject 
+    private AvatarRepository avatarRepository;
 
-    public AvatarService(AvatarRepository avatarRepository) {
-        this.avatarRepository = avatarRepository;
+    public AvatarService() {
     }
 
     public void saveAvatar(UUID userId, InputStream inputStream) throws IOException {

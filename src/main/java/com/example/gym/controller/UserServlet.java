@@ -5,12 +5,10 @@ import com.example.gym.dto.GetUserResponse;
 import com.example.gym.dto.GetUsersResponse;
 import com.example.gym.dto.UpdateUserRequest;
 import com.example.gym.model.User;
-import com.example.gym.repository.AvatarRepository;
-import com.example.gym.repository.UserRepository;
-import com.example.gym.service.AvatarService;
 import com.example.gym.service.UserService;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import jakarta.inject.Inject; 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -28,17 +26,16 @@ import java.util.stream.Collectors;
 @WebServlet("/api/users/*")
 public class UserServlet extends HttpServlet {
 
+    @Inject 
     private UserService userService;
+
     private final Gson gson = new Gson();
 
-    @Override
+    @Override 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        UserRepository userRepository = UserRepository.getInstance();
-        AvatarService avatarService = new AvatarService(new AvatarRepository());
-        this.userService = new UserService(userRepository, avatarService);
     }
-
+    
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo();
@@ -133,7 +130,6 @@ public class UserServlet extends HttpServlet {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid UUID format");
         }
     }
-
 
     private void handleGetAllUsers(HttpServletResponse resp) throws IOException {
         Collection<User> users = userService.findAll();

@@ -1,10 +1,9 @@
 package com.example.gym.controller;
 
 import com.example.gym.model.User;
-import com.example.gym.repository.AvatarRepository;
-import com.example.gym.repository.UserRepository;
 import com.example.gym.service.AvatarService;
 import com.example.gym.service.UserService;
+import jakarta.inject.Inject;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -25,15 +24,15 @@ import java.util.UUID;
 @MultipartConfig
 public class AvatarServlet extends HttpServlet {
 
+    @Inject
     private AvatarService avatarService;
+
+    @Inject
     private UserService userService;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        UserRepository userRepository = UserRepository.getInstance();
-        this.avatarService = new AvatarService(new AvatarRepository());
-        this.userService = new UserService(userRepository, this.avatarService);
     }
 
     @Override
