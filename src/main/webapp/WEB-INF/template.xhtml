@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      lang="pl">
+
+<h:head>
+    <meta charset="UTF-8"/>
+    <title>Gym Training - <ui:insert name="title">Strona Główna</ui:insert></title>
+    <h:outputStylesheet name="css/style.css"/>
+</h:head>
+
+<h:body>
+    <h:link outcome="/index.xhtml">
+        <h:graphicImage name="images/logo.png" styleClass="logo" alt="Logo"/>
+    </h:link>
+    <header class="header">
+        <h1>Aplikacja Gym Training (JSF)</h1>
+    </header>
+
+    <nav class="navigation">
+        <ul>
+            <li><h:link value="Strona Główna" outcome="/index.xhtml"/></li>
+            <li><h:link value="Kategorie Treningów" outcome="/categories.xhtml"/></li>
+            <li><a href="#{request.contextPath}/api/users">API Użytkowników (REST)</a></li>
+        </ul>
+    </nav>
+
+    <main class="content">
+        <ui:insert name="content">
+            Domyślna zawartość.
+        </ui:insert>
+    </main>
+
+    <footer class="footer">
+        <p>Laboratorium 3 - Jakarta Server Faces</p>
+        <p>Politechnika Gdańska, Narzędzia i Aplikacje Jakarta EE</p>
+    </footer>
+
+</h:body>
+</html>

@@ -16,10 +16,10 @@ import java.util.UUID;
 @ApplicationScoped
 public class WorkoutService {
 
-    @Inject 
+    @Inject
     private WorkoutTypeRepository typeRepository;
 
-    @Inject 
+    @Inject
     private WorkoutSessionRepository sessionRepository;
 
     @Inject
@@ -40,6 +40,10 @@ public class WorkoutService {
 
     public List<WorkoutType> findAllTypes() {
         return typeRepository.findAll();
+    }
+
+    public Optional<WorkoutType> findTypeById(UUID id) {
+        return typeRepository.findById(id);
     }
 
     public Optional<WorkoutSession> createWorkoutSession(UUID userId, UUID typeId, WorkoutSession details) {
@@ -65,5 +69,33 @@ public class WorkoutService {
             return Optional.of(session);
         }
         return Optional.empty();
+    }
+
+    public Optional<WorkoutSession> findSessionById(UUID id) {
+        return sessionRepository.findById(id);
+    }
+
+    public List<WorkoutSession> findSessionsByTypeId(UUID typeId) {
+        return sessionRepository.findByTypeId(typeId);
+    }
+
+    public void saveWorkoutSession(WorkoutSession session) {
+        if (session.getId() == null) {
+            session.setId(UUID.randomUUID());
+        }
+        sessionRepository.save(session);
+    }
+
+    public void deleteWorkoutSession(UUID id) {
+        sessionRepository.delete(id);
+    }
+
+    public void deleteWorkoutType(UUID typeId) {
+        List<WorkoutSession> sessions = sessionRepository.findByTypeId(typeId);
+        for (WorkoutSession session : sessions) {
+            this.deleteWorkoutSession(session.getId());
+        }
+
+        typeRepository.delete(typeId);
     }
 }

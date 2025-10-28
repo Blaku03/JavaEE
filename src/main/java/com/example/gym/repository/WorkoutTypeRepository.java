@@ -25,4 +25,8 @@ public class WorkoutTypeRepository {
     public List<WorkoutType> findAll() {
         return List.copyOf(types.values());
     }
+
+    public void delete(UUID id) {
+        types.remove(id);
+    }
 }

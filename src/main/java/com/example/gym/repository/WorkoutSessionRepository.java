@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class WorkoutSessionRepository {
@@ -24,5 +25,15 @@ public class WorkoutSessionRepository {
 
     public List<WorkoutSession> findAll() {
         return List.copyOf(sessions.values());
+    }
+
+    public void delete(UUID id) {
+        sessions.remove(id);
+    }
+
+    public List<WorkoutSession> findByTypeId(UUID typeId) {
+        return sessions.values().stream()
+                .filter(session -> session.getWorkoutType() != null && session.getWorkoutType().getId().equals(typeId))
+                .collect(Collectors.toList());
     }
 }

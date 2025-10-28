@@ -1,0 +1,54 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/WEB-INF/template.xhtml">
+
+    <f:metadata>
+        <f:viewParam name="id" value="#{workoutSessionController.sessionId}" required="true"/>
+        <f:viewAction action="#{workoutSessionController.loadSessionForView}"/>
+    </f:metadata>
+
+    <ui:define name="title">Szczegóły Sesji</ui:define>
+
+    <ui:define name="content">
+        <h:panelGroup rendered="#{workoutSessionController.session == null}">
+            <h2>Błąd</h2>
+            <p>Nie znaleziono sesji o podanym ID.</p>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{workoutSessionController.session != null}">
+            <h2>Szczegóły Sesji Treningowej</h2>
+
+            <p><strong>ID Sesji:</strong> #{workoutSessionController.session.id}</p>
+            <p><strong>Status:</strong> #{workoutSessionController.session.status}</p>
+
+            <p><strong>Czas Rozpoczęcia:</strong>
+                <h:outputText value="#{workoutSessionController.session.startTime}">
+                    <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm:ss"/>
+                </h:outputText>
+            </p>
+
+            <p><strong>Czas Zakończenia:</strong>
+                <h:outputText value="#{workoutSessionController.session.endTime}">
+                    <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm:ss"/>
+                </h:outputText>
+            </p>
+
+            <hr/>
+
+            <h3>Kategoria Treningu</h3>
+            <p><strong>Nazwa:</strong> #{workoutSessionController.session.workoutType.name}</p>
+            <p><strong>Opis:</strong> #{workoutSessionController.session.workoutType.description}</p>
+
+            <br/>
+            <h:link value="Powrót do kategorii"
+                    outcome="category_view.xhtml"
+                    styleClass="btn">
+                <f:param name="id" value="#{workoutSessionController.session.workoutType.id}"/>
+            </h:link>
+
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>
