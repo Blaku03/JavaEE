@@ -10,11 +10,6 @@ import jakarta.inject.Inject;
 
 import java.util.UUID;
 
-/**
- * Konwerter JSF dla encji WorkoutType.
- * Wymagany przez Lab 3  do obsługi rozwijanej listy.
- * Używa @FacesConverter(managed = true), aby umożliwić @Inject.
- */
 @FacesConverter(value = "workoutTypeConverter", managed = true)
 public class WorkoutTypeConverter implements Converter<WorkoutType> {
 

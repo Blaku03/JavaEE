@@ -47,13 +47,11 @@ body {
     background: #555;
 }
 
-/* Content Area */
 .content {
     padding: 2rem;
     min-height: 60vh;
 }
 
-/* [cite: 73] Footer */
 .footer {
     background: #333;
     color: #fff;
@@ -62,7 +60,6 @@ body {
     margin-top: 2rem;
 }
 
-/* Tables */
 .data-table {
     width: 100%;
     border-collapse: collapse;
@@ -100,7 +97,7 @@ body {
 .form-group select {
     width: 100%;
     padding: 8px;
-    box-sizing: border-box; /* Ważne dla 100% szerokości */
+    box-sizing: border-box;
 }
 .btn {
     background: #337ab7;
@@ -113,4 +110,9 @@ body {
 }
 .btn-danger {
     background: #d9534f;
+    padding: 0.5rem 1rem;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 1rem;
 }
