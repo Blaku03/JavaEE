@@ -1,5 +1,7 @@
 package com.example.gym.service;
 
+import com.example.gym.dto.WorkoutSessionDto;
+import com.example.gym.dto.WorkoutTypeDto;
 import com.example.gym.model.User;
 import com.example.gym.model.WorkoutSession;
 import com.example.gym.model.WorkoutType;
@@ -97,5 +99,49 @@ public class WorkoutService {
         }
 
         typeRepository.delete(typeId);
+    }
+    
+    public Optional<WorkoutType> updateWorkoutType(UUID id, WorkoutTypeDto dto) {
+        Optional<WorkoutType> typeOpt = typeRepository.findById(id);
+        if (typeOpt.isPresent()) {
+            WorkoutType type = typeOpt.get();
+            type.setName(dto.getName());
+            type.setDescription(dto.getDescription());
+            typeRepository.save(type); 
+            return Optional.of(type);
+        }
+        return Optional.empty(); 
+    }
+    
+    public WorkoutSession createWorkoutSession(UUID typeId, WorkoutSessionDto dto) {
+        
+        WorkoutType type = typeRepository.findById(typeId)
+                .orElseThrow(() -> new IllegalArgumentException("WorkoutType not found"));
+
+        WorkoutSession session = WorkoutSession.builder()
+                .id(UUID.randomUUID()) 
+                .workoutType(type) 
+                .startTime(dto.getStartTime())
+                .endTime(dto.getEndTime())
+                .status(dto.getStatus())
+                .build();
+
+        sessionRepository.save(session);
+
+        return session;
+    }
+
+    public Optional<WorkoutSession> updateWorkoutSession(UUID sessionId, WorkoutSessionDto dto) {
+        Optional<WorkoutSession> sessionOpt = sessionRepository.findById(sessionId);
+        if (sessionOpt.isPresent()) {
+            WorkoutSession session = sessionOpt.get();
+            session.setStartTime(dto.getStartTime());
+            session.setEndTime(dto.getEndTime());
+            session.setStatus(dto.getStatus());
+            
+            sessionRepository.save(session);
+            return Optional.of(session);
+        }
+        return Optional.empty();
     }
 }

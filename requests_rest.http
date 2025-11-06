@@ -1,0 +1,81 @@
+
+# 1.1 Pobierz wszystkie kategorie
+GET http://localhost:9080/gym-training/api/categories
+Accept: application/json
+
+###
+
+# 1.2 Utwórz nową kategorię
+POST http://localhost:9080/gym-training/api/categories
+Content-Type: application/json
+
+{
+  "name": "Joga",
+  "description": "Trening relaksacyjny i rozciągający"
+}
+
+###
+@new_category_id = e380cdc9-7a40-41ab-adf1-e460276bf97d
+
+# 1.3 Pobierz jedną (nową) kategorię
+GET http://localhost:9080/gym-training/api/categories/{{new_category_id}}
+Accept: application/json
+
+###
+
+# 1.4 Zaktualizuj kategorię
+PUT http://localhost:9080/gym-training/api/categories/{{new_category_id}}
+Content-Type: application/json
+
+{
+  "name": "Joga i Stretching",
+  "description": "Poprawiony opis dla jogi"
+}
+
+###
+
+# 2.1 Pobierz wszystkie sesje dla kategorii "Cardio"
+@cardio_id = 6e2d75f8-266d-4bde-8cd8-a5a22e541d56
+
+GET http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions
+Accept: application/json
+
+###
+
+# 2.2 Utwórz nową sesję dla "Cardio"
+POST http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions
+Content-Type: application/json
+
+{
+  "startTime": "2025-11-20T18:00:00",
+  "status": "PLANNED"
+}
+
+###
+@new_session_id = 4a8e3b02-e697-466c-813a-066553f360e3
+
+# 2.3 Pobierz jedną (nową) sesję
+GET http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{new_session_id}}
+Accept: application/json
+
+###
+
+# 2.4 Zaktualizuj sesję
+PUT http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{new_session_id}}
+Content-Type: application/json
+
+{
+  "startTime": "2025-11-20T18:30:00",
+  "endTime": "2025-11-20T19:00:00",
+  "status": "COMPLETED"
+}
+
+###
+
+# 2.5 Usuń sesję
+DELETE http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{new_session_id}}
+
+###
+
+# 1.5 Usuń kategorię (na końcu, aby usunąć też sesje)
+DELETE http://localhost:9080/gym-training/api/categories/{{new_category_id}}
