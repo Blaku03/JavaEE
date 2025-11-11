@@ -2,38 +2,40 @@ package com.example.gym.repository;
 
 import com.example.gym.model.WorkoutSession;
 import jakarta.enterprise.context.ApplicationScoped;
-
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager; // Import JPA
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class WorkoutSessionRepository {
 
-    private final Map<UUID, WorkoutSession> sessions = new ConcurrentHashMap<>();
+    @Inject
+    private EntityManager em;
 
     public void save(WorkoutSession session) {
-        sessions.put(session.getId(), session);
+        em.merge(session);
     }
 
     public Optional<WorkoutSession> findById(UUID id) {
-        return Optional.ofNullable(sessions.get(id));
+        return Optional.ofNullable(em.find(WorkoutSession.class, id));
     }
 
     public List<WorkoutSession> findAll() {
-        return List.copyOf(sessions.values());
+        return em.createQuery("SELECT s FROM WorkoutSession s", WorkoutSession.class)
+                .getResultList();
     }
 
     public void delete(UUID id) {
-        sessions.remove(id);
+        findById(id).ifPresent(session -> {
+            em.remove(session);
+        });
     }
 
     public List<WorkoutSession> findByTypeId(UUID typeId) {
-        return sessions.values().stream()
-                .filter(session -> session.getWorkoutType() != null && session.getWorkoutType().getId().equals(typeId))
-                .collect(Collectors.toList());
+        return em.createQuery("SELECT s FROM WorkoutSession s WHERE s.workoutType.id = :typeId", WorkoutSession.class)
+                .setParameter("typeId", typeId)
+                .getResultList();
     }
 }

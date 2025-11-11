@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--Open Liberty documentation does not use schema in examples.-->
 <server description="Jakarta EE example server">
     <featureManager>
         <feature>servlet-6.0</feature>
@@ -7,5 +6,24 @@
         <feature>cdi-4.0</feature>
         <feature>faces-4.0</feature>
         <feature>restfulWS-3.1</feature>
+        <feature>persistence-3.1</feature>
+        <feature>websocket-2.1</feature>
     </featureManager>
+
+    <library id="h2-driver-library">
+        <fileset dir="${wlp.install.dir}/usr/servers/defaultServer/lib/global/" includes="h2-*.jar"/>
+    </library>
+
+    <dataSource id="GymDB" jndiName="jdbc/GymDB">
+        <jdbcDriver javax.sql.XADataSource="org.h2.jdbcx.JdbcDataSource"
+                    javax.sql.ConnectionPoolDataSource="org.h2.jdbcx.JdbcDataSource"
+                    javax.sql.DataSource="org.h2.jdbcx.JdbcDataSource"
+                    libraryRef="h2-driver-library"/>
+
+        <properties URL="jdbc:h2:mem:gymdb;DB_CLOSE_DELAY=-1"/>
+
+    </dataSource>
+
+    <jpa defaultJtaDataSourceRef="jdbc/GymDB" />
+
 </server>

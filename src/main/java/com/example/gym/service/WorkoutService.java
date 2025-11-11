@@ -2,20 +2,21 @@ package com.example.gym.service;
 
 import com.example.gym.dto.WorkoutSessionDto;
 import com.example.gym.dto.WorkoutTypeDto;
-import com.example.gym.model.User;
 import com.example.gym.model.WorkoutSession;
 import com.example.gym.model.WorkoutType;
-import com.example.gym.repository.UserRepository;
 import com.example.gym.repository.WorkoutSessionRepository;
 import com.example.gym.repository.WorkoutTypeRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
+@Transactional
 public class WorkoutService {
 
     @Inject
@@ -24,8 +25,9 @@ public class WorkoutService {
     @Inject
     private WorkoutSessionRepository sessionRepository;
 
+    
     @Inject
-    private UserRepository userRepository;
+    private EntityManager em;
 
     public WorkoutService() {
     }
@@ -48,31 +50,6 @@ public class WorkoutService {
         return typeRepository.findById(id);
     }
 
-    public Optional<WorkoutSession> createWorkoutSession(UUID userId, UUID typeId, WorkoutSession details) {
-        Optional<User> userOpt = userRepository.findById(userId);
-        Optional<WorkoutType> typeOpt = typeRepository.findById(typeId);
-
-        if (userOpt.isPresent() && typeOpt.isPresent()) {
-            User user = userOpt.get();
-
-            WorkoutSession session = WorkoutSession.builder()
-                    .id(UUID.randomUUID())
-                    .workoutType(typeOpt.get())
-                    .startTime(details.getStartTime())
-                    .endTime(details.getEndTime())
-                    .status(details.getStatus())
-                    .build();
-
-            sessionRepository.save(session);
-
-            user.getWorkoutSessions().add(session);
-            userRepository.save(user);
-
-            return Optional.of(session);
-        }
-        return Optional.empty();
-    }
-
     public Optional<WorkoutSession> findSessionById(UUID id) {
         return sessionRepository.findById(id);
     }
@@ -85,6 +62,13 @@ public class WorkoutService {
         if (session.getId() == null) {
             session.setId(UUID.randomUUID());
         }
+
+        if (session.getWorkoutType() != null && !em.contains(session.getWorkoutType())) {
+            WorkoutType managedType = typeRepository.findById(session.getWorkoutType().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("WorkoutType not found during save"));
+            session.setWorkoutType(managedType);
+        }
+
         sessionRepository.save(session);
     }
 
@@ -97,10 +81,9 @@ public class WorkoutService {
         for (WorkoutSession session : sessions) {
             this.deleteWorkoutSession(session.getId());
         }
-
         typeRepository.delete(typeId);
     }
-    
+
     public Optional<WorkoutType> updateWorkoutType(UUID id, WorkoutTypeDto dto) {
         Optional<WorkoutType> typeOpt = typeRepository.findById(id);
         if (typeOpt.isPresent()) {
@@ -112,7 +95,7 @@ public class WorkoutService {
         }
         return Optional.empty(); 
     }
-    
+
     public WorkoutSession createWorkoutSession(UUID typeId, WorkoutSessionDto dto) {
         
         WorkoutType type = typeRepository.findById(typeId)
@@ -127,7 +110,6 @@ public class WorkoutService {
                 .build();
 
         sessionRepository.save(session);
-
         return session;
     }
 

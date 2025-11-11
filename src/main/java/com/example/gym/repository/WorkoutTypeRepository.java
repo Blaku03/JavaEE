@@ -2,31 +2,34 @@ package com.example.gym.repository;
 
 import com.example.gym.model.WorkoutType;
 import jakarta.enterprise.context.ApplicationScoped;
-
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager; 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
 public class WorkoutTypeRepository {
-
-    private final Map<UUID, WorkoutType> types = new ConcurrentHashMap<>();
+    
+    @Inject
+    private EntityManager em;
 
     public void save(WorkoutType type) {
-        types.put(type.getId(), type);
+        em.merge(type);
     }
 
     public Optional<WorkoutType> findById(UUID id) {
-        return Optional.ofNullable(types.get(id));
+        return Optional.ofNullable(em.find(WorkoutType.class, id));
     }
 
     public List<WorkoutType> findAll() {
-        return List.copyOf(types.values());
+        return em.createQuery("SELECT t FROM WorkoutType t", WorkoutType.class)
+                .getResultList();
     }
 
     public void delete(UUID id) {
-        types.remove(id);
+        findById(id).ifPresent(type -> {
+            em.remove(type); 
+        });
     }
 }
