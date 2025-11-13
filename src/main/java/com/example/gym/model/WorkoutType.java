@@ -28,7 +28,9 @@ public class WorkoutType implements Serializable {
     
     @OneToMany(
             mappedBy = "workoutType", 
-            fetch = FetchType.LAZY
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
     )
     @Builder.Default
     private List<WorkoutSession> workoutSessions = new ArrayList<>();
