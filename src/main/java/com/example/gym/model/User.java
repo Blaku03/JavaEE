@@ -1,22 +1,34 @@
 package com.example.gym.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = "id")
+@ToString
+@Entity
+@Table(name = "users")
 public class User implements Serializable {
+    
+    @Id
     @Builder.Default
     private UUID id = UUID.randomUUID();
-    private String name;
+    
+    @Column(unique = true, nullable = false)
+    private String username;
+    
+    @Column(nullable = false)
+    private String password;
+    
     private String email;
-    private List<WorkoutSession> workoutSessions;
+    
+    @Column(nullable = false)
+    private String role;
 }

@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-@ToString(exclude = "workoutType")
+@ToString(exclude = {"workoutType", "user"})
 @Entity
 @Table(name = "workout_sessions")
 public class WorkoutSession implements Serializable {
@@ -26,6 +26,10 @@ public class WorkoutSession implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workout_type_id", nullable = false)
     private WorkoutType workoutType;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;

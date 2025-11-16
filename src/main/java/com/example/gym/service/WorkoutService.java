@@ -6,17 +6,15 @@ import com.example.gym.model.WorkoutSession;
 import com.example.gym.model.WorkoutType;
 import com.example.gym.repository.WorkoutSessionRepository;
 import com.example.gym.repository.WorkoutTypeRepository;
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@ApplicationScoped
-@Transactional
+@Stateless
 public class WorkoutService {
 
     @Inject

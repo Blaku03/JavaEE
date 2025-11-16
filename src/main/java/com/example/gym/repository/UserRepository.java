@@ -1,84 +1,43 @@
 package com.example.gym.repository;
 
 import com.example.gym.model.User;
-import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.Map;
 
 @ApplicationScoped
 public class UserRepository {
 
-    private final Map<UUID, User> users = new ConcurrentHashMap<>();
+    @Inject
+    private EntityManager em;
 
-    @Inject 
-    private AvatarRepository avatarRepository;
-
-    
-    public UserRepository() {
-    }
-
-    @PostConstruct
-    private void initializeTestUsers() {
-        User user1 = User.builder().id(UUID.fromString("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3451")).name("John Doe").email("john.doe@example.com").workoutSessions(new ArrayList<>()).build();
-        User user2 = User.builder().id(UUID.fromString("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3452")).name("Jane Smith").email("jane.smith@example.com").workoutSessions(new ArrayList<>()).build();
-        User user3 = User.builder().id(UUID.fromString("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3453")).name("Peter Jones").email("peter.jones@example.com").workoutSessions(new ArrayList<>()).build();
-        User user4 = User.builder().id(UUID.fromString("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454")).name("Anna Williams").email("anna.williams@example.com").workoutSessions(new ArrayList<>()).build();
-
-        users.put(user1.getId(), user1);
-        users.put(user2.getId(), user2);
-        users.put(user3.getId(), user3);
-        users.put(user4.getId(), user4);
-
-        System.out.println("UserRepository: Załadowano 4 testowych użytkowników.");
-
-        initializeAvatars();
-    }
-
-
-    private void initializeAvatars() {
-        String[] avatarFiles = {"avatars/img1.jpeg", "avatars/img2.jpeg", "avatars/img3.jpeg", "avatars/img4.jpeg"};
-        List<User> userList = new ArrayList<>(users.values());
-
-        for (int i = 0; i < userList.size(); i++) {
-            User user = userList.get(i);
-            String avatarResourcePath = avatarFiles[i];
-
-            try (InputStream is = getClass().getClassLoader().getResourceAsStream(avatarResourcePath)) {
-                if (is != null) {
-                    avatarRepository.save(user.getId(), is);
-                } else {
-                    System.err.println("ERROR: Could not find avatar resource in classpath: " + avatarResourcePath);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        System.out.println("UserRepository: Zakończono inicjalizację avatarów.");
-    }
-
-    public Collection<User> findAll() {
-        return users.values();
+    public void save(User user) {
+        em.merge(user);
     }
 
     public Optional<User> findById(UUID id) {
-        return Optional.ofNullable(users.get(id));
+        return Optional.ofNullable(em.find(User.class, id));
     }
 
-    public void save(User user) {
-        users.put(user.getId(), user);
+    public List<User> findAll() {
+        return em.createQuery("SELECT u FROM User u", User.class)
+                .getResultList();
     }
 
-    public void delete(User user) {
-        users.remove(user.getId());
+    public void delete(UUID id) {
+        findById(id).ifPresent(user -> {
+            em.remove(user);
+        });
+    }
+
+    public Optional<User> findByUsername(String username) {
+        List<User> users = em.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
+                .setParameter("username", username)
+                .getResultList();
+        return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
     }
 }
