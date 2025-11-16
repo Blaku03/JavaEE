@@ -6,6 +6,8 @@ import com.example.gym.dto.GetUsersResponse;
 import com.example.gym.dto.UpdateUserRequest;
 import com.example.gym.model.User;
 import com.example.gym.service.UserService;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -33,6 +35,7 @@ public class UserResource {
     private UriInfo uriInfo;
 
     @GET
+    @RolesAllowed({"admin", "user"})
     public Response getAllUsers() {
         List<User> users = userService.findAll();
         List<GetUsersResponse.User> userDtos = users.stream()
@@ -46,6 +49,7 @@ public class UserResource {
 
     @GET
     @Path("/{id}")
+    @RolesAllowed({"admin", "user"})
     public Response getUserById(@PathParam("id") UUID id) {
         Optional<User> userOptional = userService.findById(id);
 
@@ -63,6 +67,7 @@ public class UserResource {
     }
 
     @POST
+    @PermitAll
     public Response createUser(CreateUserRequest request) {
         if (request.getName() == null || request.getEmail() == null) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -87,6 +92,7 @@ public class UserResource {
 
     @PUT
     @Path("/{id}")
+    @RolesAllowed({"admin", "user"})
     public Response updateUser(@PathParam("id") UUID id, UpdateUserRequest request) {
         if (request.getName() == null || request.getEmail() == null) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -102,6 +108,7 @@ public class UserResource {
 
     @DELETE
     @Path("/{id}")
+    @RolesAllowed({"admin", "user"})
     public Response deleteUser(@PathParam("id") UUID id) {
         if (userService.deleteUser(id)) {
             return Response.noContent().build();

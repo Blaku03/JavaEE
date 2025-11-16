@@ -1,72 +1,269 @@
-# 1. Get all users
+###
+### LAB 6 - Jakarta EE Security API Tests
+### Basic Authentication: admin:admin123, john:john123, jane:jane123
+###
+
+### ============================================
+### USER API - Zarządzanie użytkownikami
+### ============================================
+
+# 1.1 Pobierz wszystkich użytkowników (wymaga uwierzytelnienia)
+# @no-cookie-jar
+GET http://localhost:9080/gym-training/api/users
+Accept: application/json
+Authorization: Basic YWRtaW46YWRtaW4xMjM=
+
+###
+
+# 1.2 Pobierz użytkownika jako john
+GET http://localhost:9080/gym-training/api/users
+Accept: application/json
+Authorization: Basic am9objpqb2huMTIz
+
+###
+
+# 1.3 Pobierz użytkownika BEZ uwierzytelnienia (401 Unauthorized)
+# @no-cookie-jar
 GET http://localhost:9080/gym-training/api/users
 Accept: application/json
 
 ###
 
-# 2. Get user
-GET http://localhost:9080/gym-training/api/users/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3452
-Accept: application/json
-
-###
-
-# 3. Create new user
+# 2.1 Rejestracja nowego użytkownika (bez uwierzytelnienia - @PermitAll)
 POST http://localhost:9080/gym-training/api/users
 Content-Type: application/json
 
 {
-  "name": "Mike Ross",
-  "email": "mike.ross@example.com"
+  "name": "mike",
+  "email": "mike.ross@example.com",
+  "password": "mike123"
 }
 
 ###
+@new_user_id = 64793805-02f2-423e-917f-2c0da01d1bd8
 
-# 4. Update user
-PUT http://localhost:9080/gym-training/api/users/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454
+# 2.2 Pobierz nowo utworzonego użytkownika
+GET http://localhost:9080/gym-training/api/users/{{new_user_id}}
+Accept: application/json
+Authorization: Basic YWRtaW46YWRtaW4xMjM=
+
+###
+
+# 2.3 Zaloguj się jako nowy użytkownik
+GET http://localhost:9080/gym-training/api/users
+Accept: application/json
+Authorization: Basic bWlrZTptaWtlMTIz
+
+###
+
+### ============================================
+### CATEGORY API - Zarządzanie kategoriami
+### ============================================
+
+# 3.1 Pobierz wszystkie kategorie jako admin
+GET http://localhost:9080/gym-training/api/categories
+Accept: application/json
+Authorization: Basic YWRtaW46YWRtaW4xMjM=
+
+###
+
+# 3.2 Pobierz wszystkie kategorie jako user (john)
+# @no-cookie-jar
+GET http://localhost:9080/gym-training/api/categories
+Accept: application/json
+Authorization: Basic am9objpqb2huMTIz
+
+###
+
+# 3.3 Utwórz nową kategorię jako admin (powinno działać)
+# @no-cookie-jar
+POST http://localhost:9080/gym-training/api/categories
 Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4xMjM=
 
 {
-  "name": "Anna Nowak",
-  "email": "anna.nowak@example.com"
+  "name": "Joga",
+  "description": "Trening relaksacyjny i rozciągający"
+}
+
+###
+@new_category_id = 5e53045f-dbac-42a4-8a1a-ea33a8d668da
+
+# 3.4 Utwórz kategorię jako user (403 Forbidden - tylko admin może)
+# @no-cookie-jar
+POST http://localhost:9080/gym-training/api/categories
+Content-Type: application/json
+Authorization: Basic am9objpqb2huMTIz
+
+{
+  "name": "Pilates",
+  "description": "Test"
 }
 
 ###
 
-# 5. Check if user was updated
-GET http://localhost:9080/gym-training/api/users/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454
+# 3.5 Pobierz jedną kategorię
+GET http://localhost:9080/gym-training/api/categories/{{new_category_id}}
 Accept: application/json
+Authorization: Basic YWRtaW46YWRtaW4xMjM=
 
 ###
 
-# 6. Delete user
-DELETE http://localhost:9080/gym-training/api/users/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3451
+# 3.6 Zaktualizuj kategorię jako admin
+PUT http://localhost:9080/gym-training/api/categories/{{new_category_id}}
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4xMjM=
+
+{
+  "name": "Joga i Stretching",
+  "description": "Poprawiony opis"
+}
 
 ###
 
-# 7. Check if user was deleted
-GET http://localhost:9080/gym-training/api/users/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3451
+# 3.7 Usuń kategorię jako user (403 Forbidden)
+# @no-cookie-jar
+DELETE http://localhost:9080/gym-training/api/categories/{{new_category_id}}
+Authorization: Basic am9objpqb2huMTIz
+
+###
+
+# 3.8 Usuń kategorię jako admin (powinno działać)
+DELETE http://localhost:9080/gym-training/api/categories/{{new_category_id}}
+Authorization: Basic YWRtaW46YWRtaW4xMjM=
+
+###
+
+### ============================================
+### SESSION API - Zarządzanie sesjami treningowymi
+### ============================================
+
+@cardio_id = 0b492707-5b88-4ecb-a160-be41833f9346
+
+# 4.1 Pobierz sesje dla kategorii Cardio jako admin (wszystkie)
+GET http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions
 Accept: application/json
-
+Authorization: Basic YWRtaW46YWRtaW4xMjM=
 
 ###
-### AVATAR API
+
+# 4.2 Pobierz sesje jako john (tylko swoje)
+# @no-cookie-jar
+GET http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions
+Accept: application/json
+Authorization: Basic am9objpqb2huMTIz
+
 ###
 
-# 1. Get user avatar
+# 4.3 Pobierz sesje jako jane (tylko swoje)
+# @no-cookie-jar
+GET http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions
+Accept: application/json
+Authorization: Basic amFuZTpqYW5lMTIz
+
+###
+
+# 4.4 Utwórz nową sesję jako john (właściciel ustawiany automatycznie)
+# @no-cookie-jar
+POST http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions
+Content-Type: application/json
+Authorization: Basic am9objpqb2huMTIz
+
+{
+  "startTime": "2025-11-20T18:00:00",
+  "status": "PLANNED"
+}
+
+###
+@new_session_id = e32c0e58-fb6d-4760-bc19-9d7b16cfc9e0
+
+# 4.5 Pobierz utworzoną sesję
+GET http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{new_session_id}}
+Accept: application/json
+Authorization: Basic am9objpqb2huMTIz
+
+###
+
+# 4.6 Zaktualizuj swoją sesję jako john (powinno działać)
+# @no-cookie-jar
+PUT http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{new_session_id}}
+Content-Type: application/json
+Authorization: Basic am9objpqb2huMTIz
+
+{
+  "startTime": "2025-11-20T18:30:00",
+  "endTime": "2025-11-20T19:00:00",
+  "status": "COMPLETED"
+}
+
+###
+
+# 4.7 Spróbuj zaktualizować sesję john jako jane (403 Forbidden - nie jest właścicielem)
+# @no-cookie-jar
+PUT http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{new_session_id}}
+Content-Type: application/json
+Authorization: Basic amFuZTpqYW5lMTIz
+
+{
+  "startTime": "2025-11-20T19:00:00",
+  "status": "CANCELLED"
+}
+
+###
+
+# 4.8 Zaktualizuj sesję john jako admin (powinno działać - admin może wszystko)
+# @no-cookie-jar
+PUT http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{new_session_id}}
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4xMjM=
+
+{
+  "startTime": "2025-11-20T17:00:00",
+  "status": "IN_PROGRESS"
+}
+
+###
+
+# 4.9 Usuń swoją sesję jako john (powinno działać)
+# @no-cookie-jar
+DELETE http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{new_session_id}}
+Authorization: Basic am9objpqb2huMTIz
+
+###
+
+# 4.10 Utwórz sesję i usuń jako admin
+POST http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions
+Content-Type: application/json
+Authorization: Basic am9objpqb2huMTIz
+
+{
+  "startTime": "2025-11-21T10:00:00",
+  "status": "PLANNED"
+}
+
+###
+@session_to_delete = 00000000-0000-0000-0000-000000000000
+
+DELETE http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{session_to_delete}}
+Authorization: Basic YWRtaW46YWRtaW4xMjM=
+
+###
+
+### ============================================
+### AVATAR API (opcjonalne)
+### ============================================
+
+# 5.1 Pobierz avatar użytkownika
 GET http://localhost:9080/gym-training/api/avatars/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3452
 Accept: image/png
+Authorization: Basic YWRtaW46YWRtaW4xMjM=
 
 ###
 
-# 2. Get avatar for user that does not exist
-GET http://localhost:9080/gym-training/api/avatars/00000000-0000-0000-0000-000000000000
-Accept: image/png
-
-###
-
-# 3. Update the avatar
+# 5.2 Zaktualizuj avatar
 PUT http://localhost:9080/gym-training/api/avatars/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3452
 Content-Type: multipart/form-data; boundary=boundary
+Authorization: Basic YWRtaW46YWRtaW4xMjM=
 
 --boundary
 Content-Disposition: form-data; name="avatar"; filename="avatar.png"
@@ -77,11 +274,28 @@ Content-Type: image/png
 
 ###
 
-# 4. Detlete user avatar
+# 5.3 Usuń avatar
 DELETE http://localhost:9080/gym-training/api/avatars/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3452
+Authorization: Basic YWRtaW46YWRtaW4xMjM=
 
 ###
 
-# 5. Check if avatar was deleted
-GET http://localhost:9080/gym-training/api/avatars/f8c3de3d-1fea-4d7c-a8b0-29f63c4c3452
-Accept: image/png
+### ============================================
+### TESTY AUTORYZACJI - Podsumowanie
+### ============================================
+
+# Admin credentials: admin:admin123 (Base64: YWRtaW46YWRtaW4xMjM=)
+# User john: john:john123 (Base64: am9objpqb2huMTIz)
+# User jane: jane:jane123 (Base64: amFuZTpqYW5lMTIz)
+
+# KATEGORIE:
+# - Admin: może dodawać, edytować, usuwać
+# - User: może tylko pobierać
+
+# SESJE:
+# - Admin: widzi wszystkie, może wszystkie edytować/usuwać
+# - User: widzi tylko swoje, może edytować/usuwać tylko swoje
+# - Właściciel sesji ustawiany automatycznie przy tworzeniu
+
+# REJESTRACJA:
+# - @PermitAll - każdy może się zarejestrować bez uwierzytelnienia

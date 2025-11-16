@@ -4,7 +4,7 @@ import com.example.gym.model.WorkoutSession;
 import com.example.gym.model.WorkoutType;
 import com.example.gym.model.enums.WorkoutStatus;
 import com.example.gym.service.WorkoutService;
-import jakarta.faces.view.ViewScoped;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import lombok.Getter;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Named
-@ViewScoped
+@RequestScoped
 public class WorkoutSessionController implements Serializable {
 
     @Inject

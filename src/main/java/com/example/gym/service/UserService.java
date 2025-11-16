@@ -21,6 +21,9 @@ public class UserService {
     @Inject
     private AvatarService avatarService;
 
+    @Inject
+    private PasswordHashService passwordHashService;
+
     public UserService() {
     }
 
@@ -37,11 +40,14 @@ public class UserService {
     }
 
     public User createUser(CreateUserRequest request) {
+        String hashedPassword = passwordHashService.hashPassword(
+            request.getPassword() != null ? request.getPassword() : "defaultPassword123"
+        );
         User newUser = User.builder()
                 .id(UUID.randomUUID())
                 .username(request.getName())
                 .email(request.getEmail())
-                .password("password123")
+                .password(hashedPassword)
                 .role("user")
                 .build();
         userRepository.save(newUser);

@@ -3,6 +3,7 @@ package com.example.gym.rest;
 import com.example.gym.dto.WorkoutSessionDto;
 import com.example.gym.model.WorkoutSession;
 import com.example.gym.service.WorkoutService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -20,6 +21,7 @@ import java.util.UUID;
 @RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed({"admin", "user"})
 public class WorkoutSessionResource {
 
     @Inject

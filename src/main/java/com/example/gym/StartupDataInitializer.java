@@ -4,6 +4,7 @@ import com.example.gym.model.User;
 import com.example.gym.model.WorkoutSession;
 import com.example.gym.model.WorkoutType;
 import com.example.gym.model.enums.WorkoutStatus;
+import com.example.gym.service.PasswordHashService;
 import com.example.gym.service.UserService;
 import com.example.gym.service.WorkoutService;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -24,6 +25,9 @@ public class StartupDataInitializer {
     @Inject
     private UserService userService;
 
+    @Inject
+    private PasswordHashService passwordHashService;
+
     @Transactional
     public void onStartup(@Observes @Initialized(ApplicationScoped.class) Object init) {
         System.out.println("==========================================================");
@@ -35,7 +39,7 @@ public class StartupDataInitializer {
             User admin = User.builder()
                     .id(UUID.randomUUID())
                     .username("admin")
-                    .password("admin123")
+                    .password(passwordHashService.hashPassword("admin123"))
                     .email("admin@gym.com")
                     .role("admin")
                     .build();
@@ -45,7 +49,7 @@ public class StartupDataInitializer {
             User user1 = User.builder()
                     .id(UUID.randomUUID())
                     .username("john")
-                    .password("john123")
+                    .password(passwordHashService.hashPassword("john123"))
                     .email("john@example.com")
                     .role("user")
                     .build();
@@ -55,7 +59,7 @@ public class StartupDataInitializer {
             User user2 = User.builder()
                     .id(UUID.randomUUID())
                     .username("jane")
-                    .password("jane123")
+                    .password(passwordHashService.hashPassword("jane123"))
                     .email("jane@example.com")
                     .role("user")
                     .build();

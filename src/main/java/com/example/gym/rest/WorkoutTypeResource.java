@@ -3,6 +3,7 @@ package com.example.gym.rest;
 import com.example.gym.dto.WorkoutTypeDto;
 import com.example.gym.model.WorkoutType;
 import com.example.gym.service.WorkoutService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -29,6 +30,7 @@ public class WorkoutTypeResource {
     private UriInfo uriInfo; 
 
     @GET
+    @RolesAllowed({"admin", "user"})
     public Response getAllTypes() {
         List<WorkoutType> types = workoutService.findAllTypes();
         return Response.ok(types).build();
@@ -36,6 +38,7 @@ public class WorkoutTypeResource {
 
     @GET
     @Path("/{id}")
+    @RolesAllowed({"admin", "user"})
     public Response getTypeById(@PathParam("id") UUID id) {
         Optional<WorkoutType> type = workoutService.findTypeById(id);
 
@@ -45,6 +48,7 @@ public class WorkoutTypeResource {
     }
 
     @POST
+    @RolesAllowed("admin")
     public Response createType(WorkoutTypeDto dto) {
         
         WorkoutType newType = workoutService.createWorkoutType(dto.getName(), dto.getDescription());
@@ -55,6 +59,7 @@ public class WorkoutTypeResource {
 
     @PUT
     @Path("/{id}")
+    @RolesAllowed("admin")
     public Response updateType(@PathParam("id") UUID id, WorkoutTypeDto dto) {
         Optional<WorkoutType> updatedType = workoutService.updateWorkoutType(id, dto);
 
@@ -65,6 +70,7 @@ public class WorkoutTypeResource {
 
     @DELETE
     @Path("/{id}")
+    @RolesAllowed("admin")
     public Response deleteType(@PathParam("id") UUID id) {
         
         if (workoutService.findTypeById(id).isEmpty()) {
