@@ -67,12 +67,10 @@ public class WorkoutService {
     public List<WorkoutSession> findSessionsByTypeId(UUID typeId) {
         List<WorkoutSession> sessions = sessionRepository.findByTypeId(typeId);
         
-        // If user is admin, return all sessions
         if (ejbContext.isCallerInRole("admin")) {
             return sessions;
         }
         
-        // If user is regular user, filter to show only their sessions
         Principal principal = ejbContext.getCallerPrincipal();
         if (principal != null) {
             String username = principal.getName();
@@ -86,7 +84,6 @@ public class WorkoutService {
             }
         }
         
-        // If no user context, return empty list
         return List.of();
     }
 
@@ -119,6 +116,9 @@ public class WorkoutService {
                     if (session.getUser() == null || !session.getUser().getId().equals(currentUser.getId())) {
                         throw new ForbiddenException("You can only delete your own workout sessions");
                     }
+                }
+                else {
+                    throw new IllegalStateException("No authenticated user found");
                 }
             }
         }
@@ -158,6 +158,9 @@ public class WorkoutService {
             owner = userService.findByUsername(principal.getName())
                     .orElseThrow(() -> new IllegalStateException("Authenticated user not found in database"));
         }
+        else {
+            throw new IllegalStateException("No authenticated user found");
+        }
 
         WorkoutSession session = WorkoutSession.builder()
                 .id(UUID.randomUUID()) 
@@ -187,6 +190,9 @@ public class WorkoutService {
                     if (session.getUser() == null || !session.getUser().getId().equals(currentUser.getId())) {
                         throw new ForbiddenException("You can only update your own workout sessions");
                     }
+                }
+                else {
+                    throw new IllegalStateException("No authenticated user found");
                 }
             }
             
