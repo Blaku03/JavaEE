@@ -2,7 +2,8 @@ package com.example.gym.rest;
 
 import com.example.gym.dto.WorkoutSessionDto;
 import com.example.gym.model.WorkoutSession;
-import com.example.gym.service.WorkoutService;
+import com.example.gym.service.WorkoutSessionService;
+import com.example.gym.service.WorkoutTypeService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -25,7 +26,10 @@ import java.util.UUID;
 public class WorkoutSessionResource {
 
     @Inject
-    private WorkoutService workoutService;
+    private WorkoutSessionService sessionService;
+
+    @Inject
+    private WorkoutTypeService typeService;
 
     @Context
     private UriInfo uriInfo;
@@ -33,11 +37,11 @@ public class WorkoutSessionResource {
 
     @GET
     public Response getAllSessionsForType(@PathParam("typeId") UUID typeId) {
-        if (workoutService.findTypeById(typeId).isEmpty()) {
+        if (typeService.findTypeById(typeId).isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).entity("Category not found").build();
         }
 
-        List<WorkoutSession> sessions = workoutService.findSessionsByTypeId(typeId);
+        List<WorkoutSession> sessions = sessionService.findSessionsByTypeId(typeId);
         return Response.ok(sessions).build();
     }
 
@@ -47,7 +51,7 @@ public class WorkoutSessionResource {
     public Response getSessionById(@PathParam("typeId") UUID typeId,
                                    @PathParam("sessionId") UUID sessionId) {
 
-        Optional<WorkoutSession> sessionOpt = workoutService.findSessionById(sessionId);
+        Optional<WorkoutSession> sessionOpt = sessionService.findSessionById(sessionId);
 
         if (sessionOpt.isPresent() && sessionOpt.get().getWorkoutType().getId().equals(typeId)) {
             return Response.ok(sessionOpt.get()).build();
@@ -60,7 +64,7 @@ public class WorkoutSessionResource {
     @POST
     public Response createSession(@PathParam("typeId") UUID typeId, WorkoutSessionDto dto) {
         try {
-            WorkoutSession newSession = workoutService.createWorkoutSession(typeId, dto);
+            WorkoutSession newSession = sessionService.createWorkoutSession(typeId, dto);
 
             URI location = uriInfo.getAbsolutePathBuilder().path(newSession.getId().toString()).build();
             return Response.created(location).entity(newSession).build();
@@ -77,7 +81,7 @@ public class WorkoutSessionResource {
                                   @PathParam("sessionId") UUID sessionId,
                                   WorkoutSessionDto dto) {
 
-        Optional<WorkoutSession> sessionOpt = workoutService.findSessionById(sessionId);
+        Optional<WorkoutSession> sessionOpt = sessionService.findSessionById(sessionId);
         if (sessionOpt.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -86,7 +90,7 @@ public class WorkoutSessionResource {
             return Response.status(Response.Status.CONFLICT).entity("Session does not belong to this category.").build();
         }
 
-        WorkoutSession updatedSession = workoutService.updateWorkoutSession(sessionId, dto).get();
+        WorkoutSession updatedSession = sessionService.updateWorkoutSession(sessionId, dto).get();
         return Response.ok(updatedSession).build();
     }
 
@@ -96,12 +100,12 @@ public class WorkoutSessionResource {
     public Response deleteSession(@PathParam("typeId") UUID typeId,
                                   @PathParam("sessionId") UUID sessionId) {
 
-        Optional<WorkoutSession> sessionOpt = workoutService.findSessionById(sessionId);
+        Optional<WorkoutSession> sessionOpt = sessionService.findSessionById(sessionId);
         if (sessionOpt.isEmpty() || !sessionOpt.get().getWorkoutType().getId().equals(typeId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        workoutService.deleteWorkoutSession(sessionId);
+        sessionService.deleteWorkoutSession(sessionId);
         return Response.noContent().build();
     }
 }

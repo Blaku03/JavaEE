@@ -1,257 +1,142 @@
-###
-### LAB 6
-# Admin credentials: admin:admin123 (Base64: YWRtaW46YWRtaW4xMjM=)
-# User john: john:john123 (Base64: am9objpqb2huMTIz)
-# User jane: jane:jane123 (Base64: amFuZTpqYW5lMTIz)
-# User mike: mike:mike123 (Base64: bWlrZTptaWtlMTIz)
+@baseUrl = http://localhost:9080/gym-training/api
 
+@categoryId = 3c6fcc7f-b68a-4d31-a5fb-a75824134087
+@sessionId = 5fe9707a-24bb-412c-8928-f36740ae6b84
+
+### 1. Tylko administrator może dodawać kategorie
 # @no-cookie-jar
-GET http://localhost:9080/gym-training/api/users
-Accept: application/json
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Basic admin admin123
 
-###
+{
+    "name": "Crossfit",
+    "description": "Intensywny trening funkcjonalny"
+}
 
-# Pobierz wszystkich użytkowników
+### 1b. Tylko administrator może dodawać kategorie (Błąd - User)
 # @no-cookie-jar
-GET http://localhost:9080/gym-training/api/users
-Accept: application/json
-Authorization: Basic YWRtaW46YWRtaW4xMjM=
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Basic john john123
 
-###
+{
+    "name": "Yoga",
+    "description": "Relaks"
+}
 
-# Pobierz użytkownikow jako john
+### 2. Zwykły użytkownik może pobierać wszystkie kategorie
 # @no-cookie-jar
-GET http://localhost:9080/gym-training/api/users
-Accept: application/json
-Authorization: Basic am9objpqb2huMTIz
+GET {{baseUrl}}/categories
+Authorization: Basic john john123
 
-###
-
-# 2.1 Rejestracja nowego użytkownika
+### 3. Każdy nowy użytkownik może się zarejestrować
 # @no-cookie-jar
-POST http://localhost:9080/gym-training/api/users
+POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
-  "name": "mike",
-  "email": "mike.ross@example.com",
-  "password": "mike123"
+    "name": "newuser",
+    "email": "new@example.com",
+    "password": "newpassword123"
 }
 
-###
-@new_user_id = 2a8b7819-87f5-426f-9089-3d290025d979
-
-# 2.2 Pobierz nowo utworzonego użytkownika
+### 4. Zwykły użytkownik może dodawać elementy (Sesje)
 # @no-cookie-jar
-GET http://localhost:9080/gym-training/api/users/{{new_user_id}}
-Accept: application/json
-Authorization: Basic YWRtaW46YWRtaW4xMjM=
-
-###
-
-# 2.3 Zaloguj się jako nowy użytkownik
-# @no-cookie-jar
-GET http://localhost:9080/gym-training/api/users
-Accept: application/json
-Authorization: Basic bWlrZTptaWtlMTIz
-
-###
-
-### ============================================
-### CATEGORY API - Zarządzanie kategoriami
-### ============================================
-
-# 3.1 Pobierz wszystkie kategorie jako admin
-# @no-cookie-jar
-GET http://localhost:9080/gym-training/api/categories
-Accept: application/json
-Authorization: Basic YWRtaW46YWRtaW4xMjM=
-
-###
-
-# 3.2 Pobierz wszystkie kategorie jako user (john)
-# @no-cookie-jar
-GET http://localhost:9080/gym-training/api/categories
-Accept: application/json
-Authorization: Basic am9objpqb2huMTIz
-
-###
-
-# 3.3 Utwórz nową kategorię jako admin
-# @no-cookie-jar
-POST http://localhost:9080/gym-training/api/categories
+POST {{baseUrl}}/categories/{{categoryId}}/sessions
 Content-Type: application/json
-Authorization: Basic YWRtaW46YWRtaW4xMjM=
+Authorization: Basic newuser newpassword123
 
 {
-  "name": "Joga",
-  "description": "Trening relaksacyjny i rozciągający"
+    "startTime": "2023-12-01T10:00:00",
+    "endTime": "2023-12-01T11:00:00",
+    "status": "PLANNED"
 }
 
-###
-@new_category_id = a266bb55-6b55-4e39-9933-8c3affc3ea68
-
-# 3.4 Utwórz kategorię jako user (403 Forbidden)
+### 5. Administrator może pobrać wszystkie elementy (Sesje)
 # @no-cookie-jar
-POST http://localhost:9080/gym-training/api/categories
+GET {{baseUrl}}/categories/{{categoryId}}/sessions
+Authorization: Basic admin admin123
+
+### 6. Zwykły użytkownik może pobrać tylko swoje elementy
+# @no-cookie-jar
+GET {{baseUrl}}/categories/{{categoryId}}/sessions
+Authorization: Basic newuser newpassword123
+
+### 6b. Zwykły użytkownik może pobrać tylko swoje elementy
+# @no-cookie-jar
+GET {{baseUrl}}/categories/{{categoryId}}/sessions
+Authorization: Basic john john123
+
+### 7. Zwykły użytkownik NIE może edytować cudzych elementów
+# @no-cookie-jar
+PUT {{baseUrl}}/categories/{{categoryId}}/sessions/{{sessionId}}
 Content-Type: application/json
-Authorization: Basic am9objpqb2huMTIz
+Authorization: Basic john john123
 
 {
-  "name": "Pilates",
-  "description": "Test"
+    "startTime": "2023-12-01T15:00:00",
+    "endTime": "2023-12-01T16:00:00",
+    "status": "PLANNED"
 }
 
-###
-
-# 3.5 Pobierz jedną kategorię
+### 8. Zwykły użytkownik może edytować swoje elementy
 # @no-cookie-jar
-GET http://localhost:9080/gym-training/api/categories/{{new_category_id}}
-Accept: application/json
-Authorization: Basic YWRtaW46YWRtaW4xMjM=
-
-###
-
-# 3.6 Zaktualizuj kategorię jako admin
-# @no-cookie-jar
-PUT http://localhost:9080/gym-training/api/categories/{{new_category_id}}
+PUT {{baseUrl}}/categories/{{categoryId}}/sessions/{{sessionId}}
 Content-Type: application/json
-Authorization: Basic YWRtaW46YWRtaW4xMjM=
+Authorization: Basic newuser newpassword123
 
 {
-  "name": "Joga i Stretching",
-  "description": "Poprawiony opis"
+    "startTime": "2023-12-01T12:00:00",
+    "endTime": "2023-12-01T13:00:00",
+    "status": "COMPLETED"
 }
 
-###
-
-# 3.7 Usuń kategorię jako user (403 Forbidden)
+### 9. Administrator może edytować wszystkie elementy
 # @no-cookie-jar
-DELETE http://localhost:9080/gym-training/api/categories/{{new_category_id}}
-Authorization: Basic am9objpqb2huMTIz
-
-###
-
-# 3.8 Usuń kategorię jako admin
-# @no-cookie-jar
-DELETE http://localhost:9080/gym-training/api/categories/{{new_category_id}}
-Authorization: Basic YWRtaW46YWRtaW4xMjM=
-
-###
-
-### ============================================
-### SESSION API - Zarządzanie sesjami treningowymi
-### ============================================
-
-@cardio_id = 9e309733-a770-406d-a37f-1d2b5406996e
-
-# 4.1 Pobierz sesje dla kategorii Cardio jako admin
-# @no-cookie-jar
-GET http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions
-Accept: application/json
-Authorization: Basic YWRtaW46YWRtaW4xMjM=
-
-###
-
-# 4.2 Pobierz sesje jako john
-# @no-cookie-jar
-GET http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions
-Accept: application/json
-Authorization: Basic am9objpqb2huMTIz
-
-###
-
-# 4.3 Pobierz sesje jako jane
-# @no-cookie-jar
-GET http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions
-Accept: application/json
-Authorization: Basic amFuZTpqYW5lMTIz
-
-###
-
-# 4.4 Utwórz nową sesję jako john
-# @no-cookie-jar
-POST http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions
+PUT {{baseUrl}}/categories/{{categoryId}}/sessions/{{sessionId}}
 Content-Type: application/json
-Authorization: Basic am9objpqb2huMTIz
+Authorization: Basic admin admin123
 
 {
-  "startTime": "2025-11-20T18:00:00",
-  "status": "PLANNED"
+    "startTime": "2023-12-01T10:00:00",
+    "endTime": "2023-12-01T11:00:00",
+    "status": "PLANNED"
 }
 
-###
-@new_session_id = 35af347f-74f3-4a59-b59d-bc908057584e
-
-# 4.5 Pobierz utworzoną sesję
+### 10. Zwykły użytkownik NIE może usuwać cudzych elementów
 # @no-cookie-jar
-GET http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{new_session_id}}
-Accept: application/json
-Authorization: Basic am9objpqb2huMTIz
+DELETE {{baseUrl}}/categories/{{categoryId}}/sessions/{{sessionId}}
+Authorization: Basic john john123
 
-###
-
-# 4.6 Zaktualizuj swoją sesję jako john
+### 11. Zwykły użytkownik może usuwać swoje elementy
 # @no-cookie-jar
-PUT http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{new_session_id}}
+DELETE {{baseUrl}}/categories/{{categoryId}}/sessions/{{sessionId}}
+Authorization: Basic newuser newpassword123
+
+### 12. Przygotowanie do testu usuwania przez admina (Dodanie nowej sesji)
+# @no-cookie-jar
+POST {{baseUrl}}/categories/{{categoryId}}/sessions
 Content-Type: application/json
-Authorization: Basic am9objpqb2huMTIz
+Authorization: Basic newuser newpassword123
 
 {
-  "startTime": "2025-11-20T18:30:00",
-  "endTime": "2025-11-20T19:00:00",
-  "status": "COMPLETED"
+    "startTime": "2023-12-02T10:00:00",
+    "endTime": "2023-12-02T11:00:00",
+    "status": "PLANNED"
 }
 
-###
-
-# 4.7 Spróbuj zaktualizować sesję john jako jane (403 Forbidden - nie jest właścicielem)
+### 13. Administrator może usuwać wszystkie elementy
 # @no-cookie-jar
-PUT http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{new_session_id}}
-Content-Type: application/json
-Authorization: Basic amFuZTpqYW5lMTIz
+DELETE {{baseUrl}}/categories/{{categoryId}}/sessions/{{sessionId}}
+Authorization: Basic admin admin123
 
-{
-  "startTime": "2025-11-20T19:00:00",
-  "status": "CANCELLED"
-}
-
-###
-
-# 4.8 Zaktualizuj sesję john jako admin (powinno działać - admin może wszystko)
+### 14. Tylko administrator może usuwać kategorie (Błąd - User)
 # @no-cookie-jar
-PUT http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{new_session_id}}
-Content-Type: application/json
-Authorization: Basic YWRtaW46YWRtaW4xMjM=
+DELETE {{baseUrl}}/categories/{{categoryId}}
+Authorization: Basic john john123
 
-{
-  "startTime": "2025-11-20T17:00:00",
-  "status": "IN_PROGRESS"
-}
-
-###
-
-# 4.9 Usuń swoją sesję jako john (powinno działać)
+### 15. Tylko administrator może usuwać kategorie (Sukces - Admin)
 # @no-cookie-jar
-DELETE http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{new_session_id}}
-Authorization: Basic am9objpqb2huMTIz
-
-###
-
-# 4.10 Utwórz sesję i usuń jako admin
-# @no-cookie-jar
-POST http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions
-Content-Type: application/json
-Authorization: Basic am9objpqb2huMTIz
-
-{
-  "startTime": "2025-11-21T10:00:00",
-  "status": "PLANNED"
-}
-
-###
-@session_to_delete = 00000000-0000-0000-0000-000000000000
-
-# @no-cookie-jar
-DELETE http://localhost:9080/gym-training/api/categories/{{cardio_id}}/sessions/{{session_to_delete}}
-Authorization: Basic YWRtaW46YWRtaW4xMjM=
+DELETE {{baseUrl}}/categories/{{categoryId}}
+Authorization: Basic admin admin123

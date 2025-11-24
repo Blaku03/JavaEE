@@ -1,7 +1,6 @@
 package com.example.gym.service;
 
 import com.example.gym.dto.WorkoutSessionDto;
-import com.example.gym.dto.WorkoutTypeDto;
 import com.example.gym.model.User;
 import com.example.gym.model.WorkoutSession;
 import com.example.gym.model.WorkoutType;
@@ -18,57 +17,32 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Stateless
-public class WorkoutService {
+public class WorkoutSessionService {
+
+    @Inject
+    private WorkoutSessionRepository sessionRepository;
 
     @Inject
     private WorkoutTypeRepository typeRepository;
 
     @Inject
-    private WorkoutSessionRepository sessionRepository;
+    private UserService userService;
 
-    
     @Inject
     private EntityManager em;
 
     @Resource
     private EJBContext ejbContext;
 
-    @Inject
-    private UserService userService;
-
-    public WorkoutService() {
-    }
-
-    public WorkoutType createWorkoutType(String name, String description) {
-        WorkoutType type = WorkoutType.builder()
-                .id(UUID.randomUUID())
-                .name(name)
-                .description(description)
-                .build();
-        typeRepository.save(type);
-        return type;
-    }
-
-    public List<WorkoutType> findAllTypes() {
-        return typeRepository.findAll();
-    }
-
-    public Optional<WorkoutType> findTypeById(UUID id) {
-        return typeRepository.findById(id);
-    }
-
     public Optional<WorkoutSession> findSessionById(UUID id) {
         return sessionRepository.findById(id);
     }
 
     public List<WorkoutSession> findSessionsByTypeId(UUID typeId) {
-        List<WorkoutSession> sessions = sessionRepository.findByTypeId(typeId);
-        
         if (ejbContext.isCallerInRole("admin")) {
-            return sessions;
+            return sessionRepository.findByTypeId(typeId);
         }
         
         Principal principal = ejbContext.getCallerPrincipal();
@@ -78,9 +52,7 @@ public class WorkoutService {
             
             if (currentUser.isPresent()) {
                 UUID userId = currentUser.get().getId();
-                return sessions.stream()
-                    .filter(s -> s.getUser() != null && s.getUser().getId().equals(userId))
-                    .collect(Collectors.toList());
+                return sessionRepository.findByTypeIdAndUserId(typeId, userId);
             }
         }
         
@@ -101,65 +73,17 @@ public class WorkoutService {
         sessionRepository.save(session);
     }
 
-    public void deleteWorkoutSession(UUID id) {
-        // Verify ownership unless user is admin
-        if (!ejbContext.isCallerInRole("admin")) {
-            Optional<WorkoutSession> sessionOpt = sessionRepository.findById(id);
-            if (sessionOpt.isPresent()) {
-                WorkoutSession session = sessionOpt.get();
-                Principal principal = ejbContext.getCallerPrincipal();
-                
-                if (principal != null) {
-                    User currentUser = userService.findByUsername(principal.getName())
-                            .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
-                    
-                    if (session.getUser() == null || !session.getUser().getId().equals(currentUser.getId())) {
-                        throw new ForbiddenException("You can only delete your own workout sessions");
-                    }
-                }
-                else {
-                    throw new IllegalStateException("No authenticated user found");
-                }
-            }
-        }
-        
-        sessionRepository.delete(id);
-    }
-
-    public void deleteWorkoutType(UUID typeId) {
-        List<WorkoutSession> sessions = sessionRepository.findByTypeId(typeId);
-        for (WorkoutSession session : sessions) {
-            this.deleteWorkoutSession(session.getId());
-        }
-        typeRepository.delete(typeId);
-    }
-
-    public Optional<WorkoutType> updateWorkoutType(UUID id, WorkoutTypeDto dto) {
-        Optional<WorkoutType> typeOpt = typeRepository.findById(id);
-        if (typeOpt.isPresent()) {
-            WorkoutType type = typeOpt.get();
-            type.setName(dto.getName());
-            type.setDescription(dto.getDescription());
-            typeRepository.save(type); 
-            return Optional.of(type);
-        }
-        return Optional.empty(); 
-    }
-
     public WorkoutSession createWorkoutSession(UUID typeId, WorkoutSessionDto dto) {
-        
         WorkoutType type = typeRepository.findById(typeId)
                 .orElseThrow(() -> new IllegalArgumentException("WorkoutType not found"));
 
-        // Get current user and assign as owner
         Principal principal = ejbContext.getCallerPrincipal();
         User owner = null;
         if (principal != null) {
             owner = userService.findByUsername(principal.getName())
                     .orElseThrow(() -> new IllegalStateException("Authenticated user not found in database"));
-        }
-        else {
-            throw new IllegalStateException("No authenticated user found");
+        } else {
+             throw new IllegalStateException("No authenticated user found");
         }
 
         WorkoutSession session = WorkoutSession.builder()
@@ -180,7 +104,6 @@ public class WorkoutService {
         if (sessionOpt.isPresent()) {
             WorkoutSession session = sessionOpt.get();
             
-            // Verify ownership unless user is admin
             if (!ejbContext.isCallerInRole("admin")) {
                 Principal principal = ejbContext.getCallerPrincipal();
                 if (principal != null) {
@@ -190,8 +113,7 @@ public class WorkoutService {
                     if (session.getUser() == null || !session.getUser().getId().equals(currentUser.getId())) {
                         throw new ForbiddenException("You can only update your own workout sessions");
                     }
-                }
-                else {
+                } else {
                     throw new IllegalStateException("No authenticated user found");
                 }
             }
@@ -204,5 +126,28 @@ public class WorkoutService {
             return Optional.of(session);
         }
         return Optional.empty();
+    }
+
+    public void deleteWorkoutSession(UUID id) {
+        if (!ejbContext.isCallerInRole("admin")) {
+            Optional<WorkoutSession> sessionOpt = sessionRepository.findById(id);
+            if (sessionOpt.isPresent()) {
+                WorkoutSession session = sessionOpt.get();
+                Principal principal = ejbContext.getCallerPrincipal();
+                
+                if (principal != null) {
+                    User currentUser = userService.findByUsername(principal.getName())
+                            .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
+                    
+                    if (session.getUser() == null || !session.getUser().getId().equals(currentUser.getId())) {
+                        throw new ForbiddenException("You can only delete your own workout sessions");
+                    }
+                } else {
+                    throw new IllegalStateException("No authenticated user found");
+                }
+            }
+        }
+        
+        sessionRepository.delete(id);
     }
 }

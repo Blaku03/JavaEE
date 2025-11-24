@@ -38,4 +38,11 @@ public class WorkoutSessionRepository {
                 .setParameter("typeId", typeId)
                 .getResultList();
     }
+
+    public List<WorkoutSession> findByTypeIdAndUserId(UUID typeId, UUID userId) {
+        return em.createQuery("SELECT s FROM WorkoutSession s WHERE s.workoutType.id = :typeId AND s.user.id = :userId", WorkoutSession.class)
+                .setParameter("typeId", typeId)
+                .setParameter("userId", userId)
+                .getResultList();
+    }
 }

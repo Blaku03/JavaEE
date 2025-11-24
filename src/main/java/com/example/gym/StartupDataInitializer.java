@@ -6,7 +6,8 @@ import com.example.gym.model.WorkoutType;
 import com.example.gym.model.enums.WorkoutStatus;
 import com.example.gym.service.PasswordHashService;
 import com.example.gym.service.UserService;
-import com.example.gym.service.WorkoutService;
+import com.example.gym.service.WorkoutSessionService;
+import com.example.gym.service.WorkoutTypeService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Initialized;
 import jakarta.enterprise.event.Observes;
@@ -20,7 +21,10 @@ import java.util.UUID;
 public class StartupDataInitializer {
 
     @Inject
-    private WorkoutService workoutService;
+    private WorkoutTypeService typeService;
+
+    @Inject
+    private WorkoutSessionService sessionService;
 
     @Inject
     private UserService userService;
@@ -67,8 +71,8 @@ public class StartupDataInitializer {
             System.out.println("[Lab 6] Utworzono użytkownika: " + user2.getUsername());
 
             // Tworzenie kategorii
-            WorkoutType cardio = workoutService.createWorkoutType("Cardio", "Trening wytrzymałościowy");
-            WorkoutType strength = workoutService.createWorkoutType("Trening Siłowy", "Budowanie masy mięśniowej");
+            WorkoutType cardio = typeService.createWorkoutTypeSystem("Cardio", "Trening wytrzymałościowy");
+            WorkoutType strength = typeService.createWorkoutTypeSystem("Trening Siłowy", "Budowanie masy mięśniowej");
             System.out.println("[Lab 6] Utworzono kategorie w bazie danych: " + cardio.getName() + ", " + strength.getName());
 
             // Tworzenie sesji przypisanych do użytkowników
@@ -79,7 +83,7 @@ public class StartupDataInitializer {
                     .workoutType(cardio)
                     .user(user1)
                     .build();
-            workoutService.saveWorkoutSession(session1);
+            sessionService.saveWorkoutSession(session1);
             System.out.println("[Lab 6] Dodano sesję Cardio dla użytkownika: " + user1.getUsername());
 
             WorkoutSession session2 = WorkoutSession.builder()
@@ -88,7 +92,7 @@ public class StartupDataInitializer {
                     .workoutType(strength)
                     .user(user1)
                     .build();
-            workoutService.saveWorkoutSession(session2);
+            sessionService.saveWorkoutSession(session2);
             System.out.println("[Lab 6] Dodano sesję siłową dla użytkownika: " + user1.getUsername());
 
             WorkoutSession session3 = WorkoutSession.builder()
@@ -97,7 +101,7 @@ public class StartupDataInitializer {
                     .workoutType(cardio)
                     .user(user2)
                     .build();
-            workoutService.saveWorkoutSession(session3);
+            sessionService.saveWorkoutSession(session3);
             System.out.println("[Lab 6] Dodano sesję Cardio dla użytkownika: " + user2.getUsername());
 
             System.out.println("==========================================================");

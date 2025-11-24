@@ -2,7 +2,7 @@ package com.example.gym.rest;
 
 import com.example.gym.dto.WorkoutTypeDto;
 import com.example.gym.model.WorkoutType;
-import com.example.gym.service.WorkoutService;
+import com.example.gym.service.WorkoutTypeService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -24,7 +24,7 @@ import java.util.UUID;
 public class WorkoutTypeResource {
 
     @Inject
-    private WorkoutService workoutService;
+    private WorkoutTypeService workoutService;
 
     @Context
     private UriInfo uriInfo; 

@@ -2,7 +2,8 @@ package com.example.gym.jsf;
 
 import com.example.gym.model.WorkoutSession;
 import com.example.gym.model.WorkoutType;
-import com.example.gym.service.WorkoutService;
+import com.example.gym.service.WorkoutSessionService;
+import com.example.gym.service.WorkoutTypeService;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -19,7 +20,10 @@ import java.util.UUID;
 public class WorkoutTypeController implements Serializable {
 
     @Inject
-    private WorkoutService workoutService;
+    private WorkoutTypeService typeService;
+
+    @Inject
+    private WorkoutSessionService sessionService;
 
     @Getter
     private List<WorkoutType> workoutTypes;
@@ -35,17 +39,17 @@ public class WorkoutTypeController implements Serializable {
 
     @PostConstruct
     public void init() {
-        workoutTypes = workoutService.findAllTypes();
+        workoutTypes = typeService.findAllTypes();
     }
 
     public void loadSelectedCategory() {
         if (selectedTypeId != null && !selectedTypeId.isEmpty()) {
             try {
                 UUID uuid = UUID.fromString(selectedTypeId);
-                selectedWorkoutType = workoutService.findTypeById(uuid).orElse(null);
+                selectedWorkoutType = typeService.findTypeById(uuid).orElse(null);
 
                 if (selectedWorkoutType != null) {
-                    sessionsForType = workoutService.findSessionsByTypeId(selectedWorkoutType.getId());
+                    sessionsForType = sessionService.findSessionsByTypeId(selectedWorkoutType.getId());
                 }
             } catch (IllegalArgumentException e) {
                 System.err.println("Otrzymano nieprawidłowy format UUID: " + selectedTypeId);
@@ -55,12 +59,12 @@ public class WorkoutTypeController implements Serializable {
     }
 
     public String deleteCategory(UUID id) {
-        workoutService.deleteWorkoutType(id);
+        typeService.deleteWorkoutType(id);
         return "categories.xhtml?faces-redirect=true";
     }
 
     public String deleteSession(UUID sessionId, UUID typeId) {
-        workoutService.deleteWorkoutSession(sessionId);
+        sessionService.deleteWorkoutSession(sessionId);
         return "category_view.xhtml?id=" + typeId + "&faces-redirect=true";
     }
 }

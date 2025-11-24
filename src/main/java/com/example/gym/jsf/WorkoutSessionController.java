@@ -3,7 +3,8 @@ package com.example.gym.jsf;
 import com.example.gym.model.WorkoutSession;
 import com.example.gym.model.WorkoutType;
 import com.example.gym.model.enums.WorkoutStatus;
-import com.example.gym.service.WorkoutService;
+import com.example.gym.service.WorkoutSessionService;
+import com.example.gym.service.WorkoutTypeService;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -20,7 +21,10 @@ import java.util.UUID;
 public class WorkoutSessionController implements Serializable {
 
     @Inject
-    private WorkoutService workoutService;
+    private WorkoutSessionService sessionService;
+
+    @Inject
+    private WorkoutTypeService typeService;
 
     @Getter @Setter
     private String sessionId;
@@ -35,19 +39,19 @@ public class WorkoutSessionController implements Serializable {
     private List<WorkoutType> allTypes;
 
     public void loadSessionForEdit() {
-        allTypes = workoutService.findAllTypes();
+        allTypes = typeService.findAllTypes();
 
         if ("new".equals(sessionId)) {
             session = new WorkoutSession();
             session.setStatus(WorkoutStatus.PLANNED);
             session.setStartTime(LocalDateTime.now().plusDays(1).withMinute(0).withSecond(0));
             if (typeId != null) {
-                workoutService.findTypeById(UUID.fromString(typeId))
+                typeService.findTypeById(UUID.fromString(typeId))
                         .ifPresent(session::setWorkoutType);
             }
         } else {
             if (sessionId != null) {
-                session = workoutService.findSessionById(UUID.fromString(sessionId))
+                session = sessionService.findSessionById(UUID.fromString(sessionId))
                         .orElse(new WorkoutSession());
             }
         }
@@ -55,13 +59,13 @@ public class WorkoutSessionController implements Serializable {
 
     public void loadSessionForView() {
         if (sessionId != null) {
-            session = workoutService.findSessionById(UUID.fromString(sessionId))
+            session = sessionService.findSessionById(UUID.fromString(sessionId))
                     .orElse(null);
         }
     }
 
     public String saveSession() {
-        workoutService.saveWorkoutSession(session);
+        sessionService.saveWorkoutSession(session);
         return "category_view.xhtml?id=" + session.getWorkoutType().getId() + "&faces-redirect=true";
     }
 

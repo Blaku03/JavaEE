@@ -1,7 +1,7 @@
 package com.example.gym.jsf;
 
 import com.example.gym.model.WorkoutType;
-import com.example.gym.service.WorkoutService;
+import com.example.gym.service.WorkoutTypeService;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.convert.Converter;
@@ -14,7 +14,7 @@ import java.util.UUID;
 public class WorkoutTypeConverter implements Converter<WorkoutType> {
 
     @Inject
-    private WorkoutService workoutService;
+    private WorkoutTypeService workoutService;
 
     @Override
     public WorkoutType getAsObject(FacesContext context, UIComponent component, String value) {

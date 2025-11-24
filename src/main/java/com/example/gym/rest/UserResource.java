@@ -14,11 +14,9 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.net.URI;
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,9 +33,6 @@ public class UserResource {
 
     @Context
     private UriInfo uriInfo;
-
-    @Context
-    private SecurityContext securityContext;
 
     @GET
     @RolesAllowed({"admin"})
@@ -56,14 +51,6 @@ public class UserResource {
     @Path("/{id}")
     @RolesAllowed({"admin", "user"})
     public Response getUserById(@PathParam("id") UUID id) {
-        if (!securityContext.isUserInRole("admin")) {
-            if (!isCurrentUser(id)) {
-                return Response.status(Response.Status.FORBIDDEN)
-                        .entity("{\"error\":\"You can only view your own profile\"}")
-                        .build();
-            }
-        }
-
         Optional<User> userOptional = userService.findById(id);
 
         if (userOptional.isPresent()) {
@@ -107,14 +94,6 @@ public class UserResource {
     @Path("/{id}")
     @RolesAllowed({"admin", "user"})
     public Response updateUser(@PathParam("id") UUID id, UpdateUserRequest request) {
-        if (!securityContext.isUserInRole("admin")) {
-            if (!isCurrentUser(id)) {
-                return Response.status(Response.Status.FORBIDDEN)
-                        .entity("{\"error\":\"You can only update your own profile\"}")
-                        .build();
-            }
-        }
-
         if (request.getName() == null || request.getEmail() == null) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Name and email are required")
@@ -131,30 +110,10 @@ public class UserResource {
     @Path("/{id}")
     @RolesAllowed({"admin", "user"})
     public Response deleteUser(@PathParam("id") UUID id) {
-        if (!securityContext.isUserInRole("admin")) {
-            if (!isCurrentUser(id)) {
-                return Response.status(Response.Status.FORBIDDEN)
-                        .entity("{\"error\":\"You can only delete your own account\"}")
-                        .build();
-            }
-        }
-
         if (userService.deleteUser(id)) {
             return Response.noContent().build();
         }
 
         return Response.status(Response.Status.NOT_FOUND).build();
-    }
-
-    private boolean isCurrentUser(UUID userId) {
-        Principal principal = securityContext.getUserPrincipal();
-        if (principal == null) {
-            return false;
-        }
-
-        String username = principal.getName();
-        Optional<User> currentUser = userService.findByUsername(username);
-        
-        return currentUser.isPresent() && currentUser.get().getId().equals(userId);
     }
 }

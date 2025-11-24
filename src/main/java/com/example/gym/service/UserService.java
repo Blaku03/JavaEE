@@ -4,10 +4,14 @@ import com.example.gym.dto.CreateUserRequest;
 import com.example.gym.dto.UpdateUserRequest;
 import com.example.gym.model.User;
 import com.example.gym.repository.UserRepository;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJBContext;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.ForbiddenException;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,6 +28,9 @@ public class UserService {
     @Inject
     private PasswordHashService passwordHashService;
 
+    @Resource
+    private EJBContext ejbContext;
+
     public UserService() {
     }
 
@@ -32,6 +39,7 @@ public class UserService {
     }
 
     public Optional<User> findById(UUID id) {
+        checkAuthorization(id);
         return userRepository.findById(id);
     }
 
@@ -59,6 +67,7 @@ public class UserService {
     }
 
     public Optional<User> updateUser(UUID id, UpdateUserRequest request) {
+        checkAuthorization(id);
         Optional<User> userOptional = userRepository.findById(id);
         if (userOptional.isPresent()) {
             User user = userOptional.get();
@@ -70,6 +79,7 @@ public class UserService {
     }
 
     public boolean deleteUser(UUID id) {
+        checkAuthorization(id);
         Optional<User> userOptional = userRepository.findById(id);
         if (userOptional.isPresent()) {
             userRepository.delete(id);
@@ -81,5 +91,23 @@ public class UserService {
             return true;
         }
         return false;
+    }
+
+    private void checkAuthorization(UUID targetUserId) {
+        if (ejbContext.isCallerInRole("admin")) {
+            return;
+        }
+
+        Principal principal = ejbContext.getCallerPrincipal();
+        if (principal != null) {
+            String username = principal.getName();
+            Optional<User> currentUser = userRepository.findByUsername(username);
+
+            if (currentUser.isPresent() && currentUser.get().getId().equals(targetUserId)) {
+                return;
+            }
+        }
+
+        throw new ForbiddenException("You are not authorized to perform this action on this user.");
     }
 }
