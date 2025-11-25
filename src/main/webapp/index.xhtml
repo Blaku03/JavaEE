@@ -1,12 +1,11 @@
-<ui:composition xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/WEB-INF/template.xhtml">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    template="/WEB-INF/template.xhtml">
 
-    <ui:define name="title">Strona Główna</ui:define>
+    <ui:define name="title">#{msg['nav.home']}</ui:define>
 
     <ui:define name="content">
-        <h2>Witaj w aplikacji Gym Training!</h2>
-        <p>To jest strona główna aplikacji wykorzystującej Jakarta Server Faces.</p>
+        <h2>#{msg['welcome.title']}</h2>
+        <p>#{msg['welcome.text']}</p>
     </ui:define>
 
 </ui:composition>

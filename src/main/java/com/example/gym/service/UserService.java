@@ -2,6 +2,7 @@ package com.example.gym.service;
 
 import com.example.gym.dto.CreateUserRequest;
 import com.example.gym.dto.UpdateUserRequest;
+import com.example.gym.interceptor.Logged;
 import com.example.gym.model.User;
 import com.example.gym.repository.UserRepository;
 import jakarta.annotation.Resource;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Stateless
+@Logged
 public class UserService {
 
     @Inject

@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core"
+    template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">#{msg['nav.chat']}</ui:define>
+
+    <ui:define name="content">
+        <h2>#{msg['chat.title']}</h2>
+
+        <!-- Hidden inputs for JSF values to be used by JavaScript -->
+        <h:inputHidden id="contextPath" value="#{request.contextPath}" />
+        <h:inputHidden id="currentUser" value="#{request.remoteUser}" />
+        <h:inputHidden id="statusConnected" value="#{msg['chat.status.connected']}" />
+        <h:inputHidden id="statusDisconnected" value="#{msg['chat.status.disconnected']}" />
+
+        <div class="chat-container">
+            <div class="chat-controls">
+                <div class="form-group" style="display: inline-block; margin-right: 15px;">
+                    <label for="username" style="font-weight: bold;">#{msg['chat.username']}</label>
+                    <input type="text" id="username" value="#{request.remoteUser != null ? request.remoteUser : ''}"
+                        style="padding: 8px; width: 150px; border: 1px solid #ddd;" />
+                </div>
+                <button id="connectBtn" onclick="connect()" class="btn"
+                    style="margin-right: 5px; padding: 8px 16px;">#{msg['chat.connect']}</button>
+                <button id="disconnectBtn" onclick="disconnect()" class="btn btn-danger"
+                    style="display: none; padding: 8px 16px;">#{msg['chat.disconnect']}</button>
+                <span id="status" class="chat-status disconnected">#{msg['chat.status.disconnected']}</span>
+            </div>
+
+            <div style="display: flex; gap: 15px;">
+                <!-- Main chat area -->
+                <div style="flex: 1;">
+                    <div id="chatMessages" class="chat-messages">
+                        <!-- Messages will appear here -->
+                    </div>
+
+                    <div class="chat-input">
+                        <select id="recipientSelect" style="width: 150px;" disabled="disabled">
+                            <option value="all">#{msg['chat.all']}</option>
+                        </select>
+                        <input type="text" id="messageInput" placeholder="#{msg['chat.message']}" disabled="disabled"
+                            onkeypress="if(event.key === 'Enter') sendMessage();" />
+                        <button id="sendBtn" onclick="sendMessage()" class="btn"
+                            disabled="disabled">#{msg['chat.send']}</button>
+                    </div>
+                </div>
+
+                <!-- Online users panel -->
+                <div id="usersPanel" style="width: 180px; border: 1px solid #ddd; padding: 10px; background: #f9f9f9;">
+                    <h4 style="margin-top: 0;">#{msg['chat.online']}</h4>
+                    <ul id="usersList" style="list-style: none; padding: 0; margin: 0;">
+                        <!-- Users will appear here -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            //<![CDATA[
+            var websocket = null;
+            var connected = false;
+            var currentUsername = '';
+
+            function getWebSocketUrl() {
+                var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                var host = window.location.host;
+                var contextPath = document.getElementById('contextPath').value;
+                return protocol + '//' + host + contextPath + '/chat';
+            }
+
+            function connect() {
+                var username = document.getElementById('username').value.trim();
+                if (!username) {
+                    alert('Proszę podać nazwę użytkownika / Please enter a username');
+                    return;
+                }
+                currentUsername = username;
+
+                var wsUrl = getWebSocketUrl();
+                console.log('Connecting to: ' + wsUrl);
+
+                try {
+                    websocket = new WebSocket(wsUrl);
+
+                    websocket.onopen = function (event) {
+                        connected = true;
+                        updateUI();
+                        // Register username with server
+                        var registerMsg = JSON.stringify({
+                            type: 'register',
+                            username: currentUsername
+                        });
+                        websocket.send(registerMsg);
+                        addSystemMessage('Połączono z czatem / Connected to chat');
+                    };
+
+                    websocket.onmessage = function (event) {
+                        handleMessage(event.data);
+                    };
+
+                    websocket.onclose = function (event) {
+                        connected = false;
+                        updateUI();
+                        addSystemMessage('Rozłączono / Disconnected');
+                    };
+
+                    websocket.onerror = function (event) {
+                        console.error('WebSocket error:', event);
+                        addSystemMessage('Błąd połączenia / Connection error');
+                    };
+                } catch (e) {
+                    console.error('WebSocket connection failed:', e);
+                    alert('Nie można połączyć z czatem / Cannot connect to chat');
+                }
+            }
+
+            function disconnect() {
+                if (websocket) {
+                    websocket.close();
+                    websocket = null;
+                }
+            }
+
+            function sendMessage() {
+                var messageInput = document.getElementById('messageInput');
+                var message = messageInput.value.trim();
+                var recipient = document.getElementById('recipientSelect').value;
+
+                if (message && websocket && connected) {
+                    var msgObj = {
+                        type: 'message',
+                        username: currentUsername,
+                        content: message,
+                        recipient: recipient === 'all' ? '' : recipient
+                    };
+                    websocket.send(JSON.stringify(msgObj));
+                    messageInput.value = '';
+                }
+            }
+
+            function handleMessage(data) {
+                try {
+                    var msg = JSON.parse(data);
+
+                    if (msg.type === 'userlist') {
+                        // Update user list
+                        updateUserList(msg.users);
+                    } else if (msg.sender) {
+                        // Chat message
+                        addChatMessage(msg);
+                    }
+                } catch (e) {
+                    // Plain text message (legacy)
+                    addPlainMessage(data);
+                }
+            }
+
+            function addChatMessage(msg) {
+                var chatMessages = document.getElementById('chatMessages');
+                var messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-message';
+
+                var time = msg.time || new Date().toLocaleTimeString();
+                var text = '';
+
+                if (msg.type === 'SYSTEM') {
+                    messageDiv.classList.add('system');
+                    text = '[' + time + '] [SYSTEM] ' + msg.content;
+                } else if (msg.type === 'PRIVATE') {
+                    messageDiv.classList.add('private');
+                    text = '[' + time + '] [PRYWATNA] ' + msg.sender + ' → ' + msg.recipient + ': ' + msg.content;
+                } else {
+                    text = '[' + time + '] ' + msg.sender + ': ' + msg.content;
+                }
+
+                messageDiv.textContent = text;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function addSystemMessage(text) {
+                var chatMessages = document.getElementById('chatMessages');
+                var messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-message system';
+                messageDiv.textContent = '[' + new Date().toLocaleTimeString() + '] [SYSTEM] ' + text;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function addPlainMessage(text) {
+                var chatMessages = document.getElementById('chatMessages');
+                var messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-message';
+                messageDiv.textContent = text;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function updateUserList(users) {
+                var usersList = document.getElementById('usersList');
+                var recipientSelect = document.getElementById('recipientSelect');
+
+                // Clear and rebuild user list
+                usersList.innerHTML = '';
+
+                // Keep "all" option, remove others
+                while (recipientSelect.options.length > 1) {
+                    recipientSelect.remove(1);
+                }
+
+                users.forEach(function (user) {
+                    // Add to sidebar list
+                    var li = document.createElement('li');
+                    li.style.padding = '5px 0';
+                    li.style.borderBottom = '1px solid #eee';
+
+                    var indicator = document.createElement('span');
+                    indicator.style.display = 'inline-block';
+                    indicator.style.width = '8px';
+                    indicator.style.height = '8px';
+                    indicator.style.borderRadius = '50%';
+                    indicator.style.backgroundColor = '#5cb85c';
+                    indicator.style.marginRight = '8px';
+
+                    li.appendChild(indicator);
+                    li.appendChild(document.createTextNode(user));
+
+                    if (user === currentUsername) {
+                        li.style.fontWeight = 'bold';
+                    }
+
+                    usersList.appendChild(li);
+
+                    // Add to recipient dropdown (except self)
+                    if (user !== currentUsername) {
+                        var option = document.createElement('option');
+                        option.value = user;
+                        option.textContent = user;
+                        recipientSelect.appendChild(option);
+                    }
+                });
+            }
+
+            function updateUI() {
+                var connectBtn = document.getElementById('connectBtn');
+                var disconnectBtn = document.getElementById('disconnectBtn');
+                var messageInput = document.getElementById('messageInput');
+                var sendBtn = document.getElementById('sendBtn');
+                var recipientSelect = document.getElementById('recipientSelect');
+                var status = document.getElementById('status');
+                var usernameInput = document.getElementById('username');
+
+                if (connected) {
+                    connectBtn.style.display = 'none';
+                    disconnectBtn.style.display = 'inline-block';
+                    messageInput.disabled = false;
+                    sendBtn.disabled = false;
+                    recipientSelect.disabled = false;
+                    usernameInput.disabled = true;
+                    status.textContent = document.getElementById('statusConnected').value;
+                    status.className = 'chat-status connected';
+                } else {
+                    connectBtn.style.display = 'inline-block';
+                    disconnectBtn.style.display = 'none';
+                    messageInput.disabled = true;
+                    sendBtn.disabled = true;
+                    recipientSelect.disabled = true;
+                    usernameInput.disabled = false;
+                    status.textContent = document.getElementById('statusDisconnected').value;
+                    status.className = 'chat-status disconnected';
+
+                    // Clear user list
+                    document.getElementById('usersList').innerHTML = '';
+                    var select = document.getElementById('recipientSelect');
+                    while (select.options.length > 1) {
+                        select.remove(1);
+                    }
+                }
+            }
+
+            window.onbeforeunload = function () {
+                if (websocket) {
+                    websocket.close();
+                }
+            };
+            //]]>
+        </script>
+    </ui:define>
+
+</ui:composition>

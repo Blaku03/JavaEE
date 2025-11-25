@@ -1,10 +1,14 @@
 package com.example.gym.config;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.security.enterprise.authentication.mechanism.http.BasicAuthenticationMechanismDefinition;
 import jakarta.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
 import jakarta.security.enterprise.identitystore.Pbkdf2PasswordHash;
 
+/**
+ * Security configuration.
+ * DatabaseIdentityStoreDefinition is used for REST API Basic Auth.
+ * JSF FORM authentication uses Liberty BasicRegistry configured in server.xml.
+ */
 @DatabaseIdentityStoreDefinition(
     dataSourceLookup = "jdbc/GymDB",
     callerQuery = "SELECT password FROM users WHERE username = ?",
@@ -12,7 +16,6 @@ import jakarta.security.enterprise.identitystore.Pbkdf2PasswordHash;
     hashAlgorithm = Pbkdf2PasswordHash.class,
     priority = 10
 )
-@BasicAuthenticationMechanismDefinition(realmName = "gym-realm")
 @ApplicationScoped
 public class SecurityConfig {
 }

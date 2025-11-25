@@ -1,6 +1,7 @@
 package com.example.gym.service;
 
 import com.example.gym.dto.WorkoutTypeDto;
+import com.example.gym.interceptor.Logged;
 import com.example.gym.model.WorkoutSession;
 import com.example.gym.model.WorkoutType;
 import com.example.gym.repository.WorkoutTypeRepository;
@@ -15,6 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Stateless
+@Logged
 public class WorkoutTypeService {
 
     @Inject

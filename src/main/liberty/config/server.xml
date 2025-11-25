@@ -12,6 +12,38 @@
         <feature>enterpriseBeansLite-4.0</feature>
     </featureManager>
 
+    <!-- Logging configuration - simple format showing only message -->
+    <logging consoleLogLevel="INFO" 
+            traceSpecification="com.example.gym.*=info" 
+            consoleSource="message" 
+            consoleFormat="simple"
+            messageFormat="simple"/>
+
+    <!-- Basic User Registry for FORM authentication -->
+    <basicRegistry id="basic" realm="defaultRealm">
+        <user name="admin" password="admin123" />
+        <user name="john" password="john123" />
+        <user name="jane" password="jane123" />
+        <group name="admin">
+            <member name="admin" />
+        </group>
+        <group name="user">
+            <member name="john" />
+            <member name="jane" />
+        </group>
+    </basicRegistry>
+
+    <!-- Application security bindings -->
+    <application-bnd>
+        <security-role name="admin">
+            <group name="admin" />
+        </security-role>
+        <security-role name="user">
+            <group name="user" />
+            <group name="admin" />
+        </security-role>
+    </application-bnd>
+
     <library id="h2-driver-library">
         <fileset dir="${wlp.install.dir}/usr/servers/defaultServer/lib/global/" includes="h2-*.jar"/>
     </library>

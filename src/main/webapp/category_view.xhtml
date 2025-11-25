@@ -1,69 +1,81 @@
-<ui:composition xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:h="http://xmlns.jcp.org/jsf/html"
-                xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/WEB-INF/template.xhtml">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    template="/WEB-INF/template.xhtml">
 
     <f:metadata>
-        <f:viewParam name="id" value="#{workoutTypeController.selectedTypeId}" required="true"/>
-        <f:viewAction action="#{workoutTypeController.loadSelectedCategory}"/>
+        <f:viewParam name="id" value="#{workoutTypeController.selectedTypeId}" required="true" />
+        <f:viewAction action="#{workoutTypeController.loadSelectedCategory}" />
     </f:metadata>
 
-    <ui:define name="title">Szczegóły Kategorii</ui:define>
+    <ui:define name="title">#{msg['category.details']}</ui:define>
 
     <ui:define name="content">
         <h:panelGroup rendered="#{workoutTypeController.selectedWorkoutType == null}">
-            <h2>Błąd</h2>
-            <p>Nie znaleziono kategorii o podanym ID.</p>
-            <h:link value="Powrót do listy" outcome="categories.xhtml"/>
+            <h2>#{msg['category.error']}</h2>
+            <p>#{msg['category.notFound']}</p>
+            <h:link value="#{msg['category.backToList']}" outcome="categories.xhtml" />
         </h:panelGroup>
 
         <h:panelGroup rendered="#{workoutTypeController.selectedWorkoutType != null}">
-            <h2>Szczegóły Kategorii: #{workoutTypeController.selectedWorkoutType.name}</h2>
-            <p><strong>ID:</strong> #{workoutTypeController.selectedWorkoutType.id}</p>
-            <p><strong>Opis:</strong> #{workoutTypeController.selectedWorkoutType.description}</p>
+            <h2>#{msg['category.details']}: #{workoutTypeController.selectedWorkoutType.name}</h2>
+            <p><strong>#{msg['label.id']}:</strong> #{workoutTypeController.selectedWorkoutType.id}</p>
+            <p><strong>#{msg['label.description']}:</strong> #{workoutTypeController.selectedWorkoutType.description}
+            </p>
 
-            <hr/>
+            <hr />
 
-            <h3>Sesje Treningowe dla tej Kategorii (Elementy)</h3>
+            <h3>#{msg['category.sessions']}</h3>
 
-            <h:link value="Dodaj nową sesję" outcome="session_edit.xhtml" styleClass="btn">
-                <f:param name="id" value="new"/>
-                <f:param name="typeId" value="#{workoutTypeController.selectedWorkoutType.id}"/>
-            </h:link>
-            <h:dataTable value="#{workoutTypeController.sessionsForType}" var="sess" styleClass="data-table">
-                <h:column>
-                    <f:facet name="header">ID Sesji</f:facet>
-                    #{sess.id} </h:column>
-                <h:column>
-                    <f:facet name="header">Start</f:facet>
-                    <h:outputText value="#{sess.startTime}"> <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm"/>
-                    </h:outputText>
-                </h:column>
-                <h:column>
-                    <f:facet name="header">Koniec</f:facet>
-                    <h:outputText value="#{sess.endTime}"> <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm"/>
-                    </h:outputText>
-                </h:column>
-                <h:column>
-                    <f:facet name="header">Status</f:facet>
-                    #{sess.status} </h:column>
-                <h:column>
-                    <f:facet name="header">Akcje</f:facet>
-                    <h:form styleClass="actions-col">
-                        <h:link value="Podgląd" outcome="session_view.xhtml" styleClass="btn">
-                            <f:param name="id" value="#{sess.id}"/> </h:link>
+            <h:form id="sessionsForm">
+                <h:link value="#{msg['session.addNew']}" outcome="session_edit.xhtml" styleClass="btn">
+                    <f:param name="id" value="new" />
+                    <f:param name="typeId" value="#{workoutTypeController.selectedWorkoutType.id}" />
+                </h:link>
 
-                        <h:link value="Edytuj" outcome="session_edit.xhtml" styleClass="btn">
-                            <f:param name="id" value="#{sess.id}"/> </h:link>
+                <h:panelGroup id="sessionsTable">
+                    <h:dataTable value="#{workoutTypeController.sessionsForType}" var="sess" styleClass="data-table">
+                        <h:column>
+                            <f:facet name="header">#{msg['label.sessionId']}</f:facet>
+                            #{sess.id}
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">#{msg['label.start']}</f:facet>
+                            <h:outputText value="#{sess.startTime}">
+                                <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm" />
+                            </h:outputText>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">#{msg['label.end']}</f:facet>
+                            <h:outputText value="#{sess.endTime}">
+                                <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm" />
+                            </h:outputText>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">#{msg['label.status']}</f:facet>
+                            #{sess.status}
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">#{msg['label.actions']}</f:facet>
+                            <h:link value="#{msg['btn.view']}" outcome="session_view.xhtml" styleClass="btn"
+                                rendered="#{request.isUserInRole('admin') or (sess.user.username eq request.remoteUser)}">
+                                <f:param name="id" value="#{sess.id}" />
+                            </h:link>
 
-                        <h:commandButton value="Usuń"
-                                         action="#{workoutTypeController.deleteSession(sess.id, workoutTypeController.selectedWorkoutType.id)}"
-                                         onclick="return confirm('Czy na pewno chcesz usunąć tę sesję?');"
-                                         styleClass="btn-danger"/>
-                    </h:form>
-                </h:column>
-            </h:dataTable>
+                            <h:link value="#{msg['btn.edit']}" outcome="session_edit.xhtml" styleClass="btn"
+                                rendered="#{request.isUserInRole('admin') or (sess.user.username eq request.remoteUser)}">
+                                <f:param name="id" value="#{sess.id}" />
+                            </h:link>
+
+                            <h:commandButton value="#{msg['btn.delete']}"
+                                action="#{workoutTypeController.deleteSessionAjax(sess.id)}"
+                                onclick="return confirm('#{msg['confirm.deleteSession']}');" styleClass="btn-danger"
+                                rendered="#{request.isUserInRole('admin') or (sess.user.username eq request.remoteUser)}">
+                                <f:ajax execute="@this" render="sessionsTable" />
+                            </h:commandButton>
+                        </h:column>
+                    </h:dataTable>
+                </h:panelGroup>
+            </h:form>
         </h:panelGroup>
     </ui:define>
 

@@ -1,41 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      lang="pl">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core"
+    lang="#{localeController.language}">
 
-<h:head>
-    <meta charset="UTF-8"/>
-    <title>Gym Training - <ui:insert name="title">XXXX</ui:insert></title>
-    <h:outputStylesheet name="css/style.css"/>
-</h:head>
+<f:view locale="#{localeController.locale}">
+    <h:head>
+        <meta charset="UTF-8" />
+        <title>Gym Training - <ui:insert name="title">XXXX</ui:insert>
+        </title>
+        <h:outputStylesheet name="css/style.css" />
+    </h:head>
 
-<h:body>
-    <h:link outcome="/index.xhtml">
-        <h:graphicImage name="images/logo.png" styleClass="logo" alt="Logo"/>
-    </h:link>
-    <header class="header">
-        <h1>Aplikacja Gym Training (JSF)</h1>
-    </header>
+    <h:body>
+        <h:link outcome="/index.xhtml">
+            <h:graphicImage name="images/logo.png" styleClass="logo" alt="Logo" />
+        </h:link>
+        <header class="header">
+            <h1>#{msg['app.title']}</h1>
+            <div style="float: right; margin-top: -40px;">
+                <h:form>
+                    <h:commandButton value="PL" action="#{localeController.changeLanguage('pl')}" styleClass="btn-small"
+                        disabled="#{localeController.language == 'pl'}" />
+                    <h:commandButton value="EN" action="#{localeController.changeLanguage('en')}" styleClass="btn-small"
+                        disabled="#{localeController.language == 'en'}" />
+                </h:form>
+            </div>
+        </header>
 
-    <nav class="navigation">
-        <ul>
-            <li><h:link value="Strona Główna" outcome="/index.xhtml"/></li>
-            <li><h:link value="Kategorie Treningów" outcome="/categories.xhtml"/></li>
-        </ul>
-    </nav>
+        <nav class="navigation">
+            <ul>
+                <li>
+                    <h:link value="#{msg['nav.home']}" outcome="/index.xhtml" />
+                </li>
+                <li>
+                    <h:link value="#{msg['nav.categories']}" outcome="/categories.xhtml" />
+                </li>
+                <li>
+                    <h:link value="#{msg['nav.chat']}" outcome="/chat.xhtml" />
+                </li>
+            </ul>
+            <div class="user-panel">
+                <h:panelGroup rendered="#{not empty request.remoteUser}">
+                    <span class="user-info-text">#{msg['nav.user']} <strong>#{request.remoteUser}</strong></span>
+                    <h:form style="display: inline;">
+                        <h:commandButton value="#{msg['nav.logout']}" action="#{logoutController.logout}"
+                            styleClass="btn btn-danger btn-small" />
+                    </h:form>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{empty request.remoteUser}">
+                    <h:link value="#{msg['nav.login']}" outcome="/login.xhtml" styleClass="btn btn-small" />
+                </h:panelGroup>
+            </div>
+        </nav>
 
-    <main class="content">
-        <ui:insert name="content">
-            Domyślna zawartość.
-        </ui:insert>
-    </main>
+        <main class="content">
+            <h:messages globalOnly="true"
+                style="color: red; list-style: none; padding: 10px; border: 1px solid red; background-color: #ffe6e6; margin-bottom: 15px;" />
+            <ui:insert name="content">
+                Domyślna zawartość.
+            </ui:insert>
+        </main>
 
-    <footer class="footer">
-        <p>Laboratorium Java</p>
-        <p>Politechnika Gdańska, Narzędzia i Aplikacje Jakarta EE</p>
-    </footer>
+        <footer class="footer">
+            <p>Laboratorium Java</p>
+            <p>Politechnika Gdańska, Narzędzia i Aplikacje Jakarta EE</p>
+        </footer>
 
-</h:body>
+    </h:body>
+</f:view>
+
 </html>

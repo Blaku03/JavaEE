@@ -1,6 +1,7 @@
 package com.example.gym.service;
 
 import com.example.gym.dto.WorkoutSessionDto;
+import com.example.gym.interceptor.Logged;
 import com.example.gym.model.User;
 import com.example.gym.model.WorkoutSession;
 import com.example.gym.model.WorkoutType;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Stateless
+@Logged
 public class WorkoutSessionService {
 
     @Inject
