@@ -6,12 +6,17 @@ import com.example.gym.model.WorkoutType;
 import com.example.gym.model.enums.WorkoutStatus;
 import com.example.gym.service.WorkoutSessionService;
 import com.example.gym.service.WorkoutTypeService;
+import jakarta.ejb.EJBException;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,6 +24,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Named
@@ -101,23 +107,54 @@ public class WorkoutSessionController implements Serializable {
     }
 
     public String saveSession() {
+        // Walidacja Bean Validation przed zapisem (walidator tworzony lokalnie)
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            Validator validator = factory.getValidator();
+            Set<ConstraintViolation<WorkoutSession>> violations = validator.validate(session);
+            if (!violations.isEmpty()) {
+                FacesContext context = FacesContext.getCurrentInstance();
+                for (ConstraintViolation<WorkoutSession> violation : violations) {
+                    String fieldName = violation.getPropertyPath().toString();
+                    String message = violation.getMessage();
+                    context.addMessage(fieldName.isEmpty() ? null : fieldName,
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message));
+                }
+                return null; // Pozostań na stronie z błędami
+            }
+        }
+
         try {
             versionConflict = false;
             sessionService.saveWorkoutSession(session);
             return "category_view.xhtml?id=" + session.getWorkoutType().getId() + "&faces-redirect=true";
         } catch (OptimisticLockConflictException e) {
-            // Obsługa konfliktu wersji
-            versionConflict = true;
-            databaseVersion = e.getDatabaseVersion();
-            userVersion = e.getUserVersion();
-            
-            FacesContext.getCurrentInstance().addMessage(null, 
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, 
-                    "Konflikt wersji! / Version conflict!", 
-                    "Sesja została zmodyfikowana przez innego użytkownika. / Session was modified by another user."));
-            
-            return null; // Pozostań na stronie edycji
+            // Bezpośrednia obsługa konfliktu wersji
+            handleVersionConflict(e);
+            return null;
+        } catch (EJBException e) {
+            // EJB opakowuje wyjątki - sprawdź czy to nasz OptimisticLockConflictException
+            Throwable cause = e.getCause();
+            if (cause instanceof OptimisticLockConflictException) {
+                handleVersionConflict((OptimisticLockConflictException) cause);
+                return null;
+            }
+            // Inny błąd EJB - przekaż dalej
+            throw e;
         }
+    }
+
+    /**
+     * Obsługuje konflikt wersji - ustawia stan i wyświetla komunikat.
+     */
+    private void handleVersionConflict(OptimisticLockConflictException e) {
+        versionConflict = true;
+        databaseVersion = e.getDatabaseVersion();
+        userVersion = e.getUserVersion();
+        
+        FacesContext.getCurrentInstance().addMessage(null, 
+            new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                "Konflikt wersji! / Version conflict!", 
+                "Sesja została zmodyfikowana przez innego użytkownika. / Session was modified by another user."));
     }
 
     /**
