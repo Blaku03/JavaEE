@@ -2,6 +2,7 @@ package com.example.gym.jsf;
 
 import com.example.gym.model.WorkoutSession;
 import com.example.gym.model.WorkoutType;
+import com.example.gym.model.enums.WorkoutStatus;
 import com.example.gym.service.WorkoutSessionService;
 import com.example.gym.service.WorkoutTypeService;
 import jakarta.annotation.PostConstruct;
@@ -15,6 +16,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,6 +42,22 @@ public class WorkoutTypeController implements Serializable {
     @Getter
     private List<WorkoutSession> sessionsForType;
 
+    // Pola filtrów
+    @Getter @Setter
+    private WorkoutStatus filterStatus;
+
+    @Getter @Setter
+    private LocalDateTime filterStartTimeFrom;
+
+    @Getter @Setter
+    private LocalDateTime filterStartTimeTo;
+
+    @Getter @Setter
+    private LocalDateTime filterEndTimeFrom;
+
+    @Getter @Setter
+    private LocalDateTime filterEndTimeTo;
+
     @PostConstruct
     public void init() {
         workoutTypes = typeService.findAllTypes();
@@ -52,13 +70,49 @@ public class WorkoutTypeController implements Serializable {
                 selectedWorkoutType = typeService.findTypeById(uuid).orElse(null);
 
                 if (selectedWorkoutType != null) {
-                    sessionsForType = sessionService.findSessionsByTypeId(selectedWorkoutType.getId());
+                    // Zastosuj filtry przy ładowaniu
+                    applyFilters();
                 }
             } catch (IllegalArgumentException e) {
                 System.err.println("Otrzymano nieprawidłowy format UUID: " + selectedTypeId);
                 selectedWorkoutType = null;
             }
         }
+    }
+
+    /**
+     * Zastosuj filtry do listy sesji (Criteria API z AND logic).
+     */
+    public void applyFilters() {
+        if (selectedWorkoutType != null) {
+            sessionsForType = sessionService.findSessionsByFilters(
+                    selectedWorkoutType.getId(),
+                    filterStatus,
+                    filterStartTimeFrom,
+                    filterStartTimeTo,
+                    filterEndTimeFrom,
+                    filterEndTimeTo
+            );
+        }
+    }
+
+    /**
+     * Wyczyść wszystkie filtry i załaduj wszystkie sesje.
+     */
+    public void clearFilters() {
+        filterStatus = null;
+        filterStartTimeFrom = null;
+        filterStartTimeTo = null;
+        filterEndTimeFrom = null;
+        filterEndTimeTo = null;
+        
+        if (selectedWorkoutType != null) {
+            sessionsForType = sessionService.findSessionsByTypeId(selectedWorkoutType.getId());
+        }
+    }
+
+    public WorkoutStatus[] getWorkoutStatuses() {
+        return WorkoutStatus.values();
     }
 
     public String deleteCategory(UUID id) {
@@ -94,10 +148,8 @@ public class WorkoutTypeController implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         try {
             sessionService.deleteWorkoutSession(sessionId);
-            // Refresh the sessions list after deletion
-            if (selectedWorkoutType != null) {
-                sessionsForType = sessionService.findSessionsByTypeId(selectedWorkoutType.getId());
-            }
+            // Refresh the sessions list after deletion (with filters)
+            applyFilters();
         } catch (ForbiddenException e) {
             context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Brak uprawnień", "Nie możesz usunąć tej sesji."));
         } catch (Exception e) {

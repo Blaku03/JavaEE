@@ -1,10 +1,12 @@
 package com.example.gym.jsf;
 
+import com.example.gym.exception.OptimisticLockConflictException;
 import com.example.gym.model.WorkoutSession;
 import com.example.gym.model.WorkoutType;
 import com.example.gym.model.enums.WorkoutStatus;
 import com.example.gym.service.WorkoutSessionService;
 import com.example.gym.service.WorkoutTypeService;
+import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
@@ -40,6 +42,16 @@ public class WorkoutSessionController implements Serializable {
 
     @Getter
     private List<WorkoutType> allTypes;
+
+    // Pola do obsługi konfliktu wersji
+    @Getter
+    private boolean versionConflict = false;
+
+    @Getter
+    private WorkoutSession databaseVersion;  // Aktualna wersja z bazy
+
+    @Getter
+    private WorkoutSession userVersion;      // Wersja z danymi użytkownika
 
     public void loadSessionForEdit() throws IOException {
         allTypes = typeService.findAllTypes();
@@ -89,8 +101,49 @@ public class WorkoutSessionController implements Serializable {
     }
 
     public String saveSession() {
-        sessionService.saveWorkoutSession(session);
-        return "category_view.xhtml?id=" + session.getWorkoutType().getId() + "&faces-redirect=true";
+        try {
+            versionConflict = false;
+            sessionService.saveWorkoutSession(session);
+            return "category_view.xhtml?id=" + session.getWorkoutType().getId() + "&faces-redirect=true";
+        } catch (OptimisticLockConflictException e) {
+            // Obsługa konfliktu wersji
+            versionConflict = true;
+            databaseVersion = e.getDatabaseVersion();
+            userVersion = e.getUserVersion();
+            
+            FacesContext.getCurrentInstance().addMessage(null, 
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                    "Konflikt wersji! / Version conflict!", 
+                    "Sesja została zmodyfikowana przez innego użytkownika. / Session was modified by another user."));
+            
+            return null; // Pozostań na stronie edycji
+        }
+    }
+
+    /**
+     * Nadpisuje aktualną wersję w bazie danymi użytkownika (force save).
+     */
+    public String forceOverwrite() {
+        if (userVersion != null && databaseVersion != null) {
+            // Ustaw wersję z bazy danych, aby nadpisać
+            session.setVersion(databaseVersion.getVersion());
+            versionConflict = false;
+            return saveSession();
+        }
+        return null;
+    }
+
+    /**
+     * Odświeża formularz z danymi z bazy danych.
+     */
+    public String refreshFromDatabase() {
+        if (databaseVersion != null) {
+            session = databaseVersion;
+            versionConflict = false;
+            databaseVersion = null;
+            userVersion = null;
+        }
+        return null;
     }
 
     public WorkoutStatus[] getWorkoutStatuses() {

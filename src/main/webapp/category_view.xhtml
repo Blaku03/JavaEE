@@ -1,6 +1,6 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    template="/WEB-INF/template.xhtml">
+    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough" template="/WEB-INF/template.xhtml">
 
     <f:metadata>
         <f:viewParam name="id" value="#{workoutTypeController.selectedTypeId}" required="true" />
@@ -27,6 +27,61 @@
             <h3>#{msg['category.sessions']}</h3>
 
             <h:form id="sessionsForm">
+                <!-- Panel filtrów -->
+                <div class="filter-panel">
+                    <h4>#{msg['filter.title']}</h4>
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <h:outputLabel value="#{msg['label.status']}" for="filterStatus" />
+                            <h:selectOneMenu id="filterStatus" value="#{workoutTypeController.filterStatus}">
+                                <f:selectItem itemLabel="-- #{msg['label.status']} --" itemValue="#{null}" />
+                                <f:selectItems value="#{workoutTypeController.workoutStatuses}" var="status"
+                                    itemLabel="#{status}" itemValue="#{status}" />
+                            </h:selectOneMenu>
+                        </div>
+                        <div class="filter-group">
+                            <h:outputLabel value="#{msg['label.start']} (od)" for="filterStartFrom" />
+                            <h:inputText id="filterStartFrom" value="#{workoutTypeController.filterStartTimeFrom}"
+                                pt:type="datetime-local">
+                                <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd'T'HH:mm" />
+                            </h:inputText>
+                        </div>
+                        <div class="filter-group">
+                            <h:outputLabel value="#{msg['label.start']} (do)" for="filterStartTo" />
+                            <h:inputText id="filterStartTo" value="#{workoutTypeController.filterStartTimeTo}"
+                                pt:type="datetime-local">
+                                <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd'T'HH:mm" />
+                            </h:inputText>
+                        </div>
+                    </div>
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <h:outputLabel value="#{msg['label.end']} (od)" for="filterEndFrom" />
+                            <h:inputText id="filterEndFrom" value="#{workoutTypeController.filterEndTimeFrom}"
+                                pt:type="datetime-local">
+                                <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd'T'HH:mm" />
+                            </h:inputText>
+                        </div>
+                        <div class="filter-group">
+                            <h:outputLabel value="#{msg['label.end']} (do)" for="filterEndTo" />
+                            <h:inputText id="filterEndTo" value="#{workoutTypeController.filterEndTimeTo}"
+                                pt:type="datetime-local">
+                                <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd'T'HH:mm" />
+                            </h:inputText>
+                        </div>
+                    </div>
+                    <div class="filter-actions">
+                        <h:commandButton value="#{msg['filter.apply']}" action="#{workoutTypeController.applyFilters()}"
+                            styleClass="btn">
+                            <f:ajax execute="@form" render="sessionsTable" />
+                        </h:commandButton>
+                        <h:commandButton value="#{msg['filter.clear']}" action="#{workoutTypeController.clearFilters()}"
+                            styleClass="btn btn-danger">
+                            <f:ajax execute="@form" render="@form" />
+                        </h:commandButton>
+                    </div>
+                </div>
+
                 <h:link value="#{msg['session.addNew']}" outcome="session_edit.xhtml" styleClass="btn">
                     <f:param name="id" value="new" />
                     <f:param name="typeId" value="#{workoutTypeController.selectedWorkoutType.id}" />
@@ -37,6 +92,10 @@
                         <h:column>
                             <f:facet name="header">#{msg['label.sessionId']}</f:facet>
                             #{sess.id}
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">#{msg['label.version']}</f:facet>
+                            #{sess.version}
                         </h:column>
                         <h:column>
                             <f:facet name="header">#{msg['label.start']}</f:facet>
@@ -53,6 +112,18 @@
                         <h:column>
                             <f:facet name="header">#{msg['label.status']}</f:facet>
                             #{sess.status}
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">#{msg['label.createdAt']}</f:facet>
+                            <h:outputText value="#{sess.createdAt}">
+                                <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm" />
+                            </h:outputText>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">#{msg['label.updatedAt']}</f:facet>
+                            <h:outputText value="#{sess.updatedAt}">
+                                <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm" />
+                            </h:outputText>
                         </h:column>
                         <h:column>
                             <f:facet name="header">#{msg['label.actions']}</f:facet>

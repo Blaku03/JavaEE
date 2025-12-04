@@ -3,7 +3,11 @@ package com.example.gym.repository;
 import com.example.gym.model.WorkoutType;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager; 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,8 +27,11 @@ public class WorkoutTypeRepository {
     }
 
     public List<WorkoutType> findAll() {
-        return em.createQuery("SELECT t FROM WorkoutType t", WorkoutType.class)
-                .getResultList();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<WorkoutType> cq = cb.createQuery(WorkoutType.class);
+        Root<WorkoutType> root = cq.from(WorkoutType.class);
+        cq.select(root);
+        return em.createQuery(cq).getResultList();
     }
 
     public void delete(UUID id) {

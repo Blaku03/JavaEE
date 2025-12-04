@@ -17,9 +17,124 @@
     <ui:define name="content">
         <h2>#{workoutSessionController.sessionId == 'new' ? msg['session.add'] : msg['session.edit']}</h2>
 
-        <h:form>
+        <!-- Panel konfliktu wersji -->
+        <h:panelGroup rendered="#{workoutSessionController.versionConflict}" styleClass="conflict-panel">
+            <div class="conflict-warning">
+                <h3>⚠️ #{msg['conflict.title']}</h3>
+                <p>#{msg['conflict.message']}</p>
+
+                <div class="conflict-comparison">
+                    <!-- Wersja z bazy danych -->
+                    <div class="conflict-column">
+                        <h4>#{msg['conflict.databaseVersion']}</h4>
+                        <table class="conflict-table">
+                            <tr>
+                                <th>#{msg['label.version']}</th>
+                                <td>#{workoutSessionController.databaseVersion.version}</td>
+                            </tr>
+                            <tr>
+                                <th>#{msg['label.status']}</th>
+                                <td>#{workoutSessionController.databaseVersion.status}</td>
+                            </tr>
+                            <tr>
+                                <th>#{msg['label.startTime']}</th>
+                                <td>
+                                    <h:outputText value="#{workoutSessionController.databaseVersion.startTime}">
+                                        <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>#{msg['label.endTime']}</th>
+                                <td>
+                                    <h:outputText value="#{workoutSessionController.databaseVersion.endTime}">
+                                        <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>#{msg['label.updatedAt']}</th>
+                                <td>
+                                    <h:outputText value="#{workoutSessionController.databaseVersion.updatedAt}">
+                                        <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm:ss" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Dane użytkownika -->
+                    <div class="conflict-column">
+                        <h4>#{msg['conflict.yourVersion']}</h4>
+                        <table class="conflict-table">
+                            <tr>
+                                <th>#{msg['label.version']}</th>
+                                <td>#{workoutSessionController.userVersion.version}</td>
+                            </tr>
+                            <tr>
+                                <th>#{msg['label.status']}</th>
+                                <td>#{workoutSessionController.userVersion.status}</td>
+                            </tr>
+                            <tr>
+                                <th>#{msg['label.startTime']}</th>
+                                <td>
+                                    <h:outputText value="#{workoutSessionController.userVersion.startTime}">
+                                        <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>#{msg['label.endTime']}</th>
+                                <td>
+                                    <h:outputText value="#{workoutSessionController.userVersion.endTime}">
+                                        <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>#{msg['label.updatedAt']}</th>
+                                <td>
+                                    <h:outputText value="#{workoutSessionController.userVersion.updatedAt}">
+                                        <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm:ss" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <h:form styleClass="conflict-actions">
+                    <h:commandButton value="#{msg['conflict.overwrite']}"
+                        action="#{workoutSessionController.forceOverwrite()}" styleClass="btn btn-warning" />
+                    <h:commandButton value="#{msg['conflict.refresh']}"
+                        action="#{workoutSessionController.refreshFromDatabase()}" styleClass="btn" />
+                </h:form>
+            </div>
+        </h:panelGroup>
+
+        <h:form rendered="#{not workoutSessionController.versionConflict}">
             <h:messages globalOnly="false"
                 style="color: red; list-style-type: none; padding: 0; margin-bottom: 1rem;" />
+
+            <!-- Ukryte pole wersji dla optimistic locking -->
+            <h:inputHidden value="#{workoutSessionController.session.version}" />
+
+            <!-- Wyświetl wersję i timestampy dla istniejących sesji -->
+            <h:panelGroup rendered="#{workoutSessionController.sessionId != 'new'}">
+                <div class="form-info">
+                    <span><strong>#{msg['label.version']}:</strong> #{workoutSessionController.session.version}</span>
+                    <span style="margin-left: 20px;"><strong>#{msg['label.createdAt']}:</strong>
+                        <h:outputText value="#{workoutSessionController.session.createdAt}">
+                            <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm:ss" />
+                        </h:outputText>
+                    </span>
+                    <span style="margin-left: 20px;"><strong>#{msg['label.updatedAt']}:</strong>
+                        <h:outputText value="#{workoutSessionController.session.updatedAt}">
+                            <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm:ss" />
+                        </h:outputText>
+                    </span>
+                </div>
+            </h:panelGroup>
 
             <div class="form-group">
                 <h:outputLabel value="#{msg['session.category']}" for="category" />
@@ -31,6 +146,7 @@
                     <f:selectItems value="#{workoutSessionController.allTypes}" var="type" itemLabel="#{type.name}"
                         itemValue="#{type}" />
                 </h:selectOneMenu>
+                <h:message for="category" styleClass="error-message" />
             </div>
 
             <div class="form-group">
@@ -40,6 +156,7 @@
                     <f:selectItems value="#{workoutSessionController.getWorkoutStatuses()}" var="status"
                         itemLabel="#{status}" itemValue="#{status}" />
                 </h:selectOneMenu>
+                <h:message for="status" styleClass="error-message" />
             </div>
 
             <div class="form-group">
@@ -48,6 +165,7 @@
                     pt:type="datetime-local" required="true" requiredMessage="#{msg['session.startTimeRequired']}">
                     <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd'T'HH:mm" />
                 </h:inputText>
+                <h:message for="startTime" styleClass="error-message" />
             </div>
 
             <div class="form-group">
@@ -55,6 +173,7 @@
                 <h:inputText id="endTime" value="#{workoutSessionController.session.endTime}" pt:type="datetime-local">
                     <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd'T'HH:mm" />
                 </h:inputText>
+                <h:message for="endTime" styleClass="error-message" />
             </div>
 
             <h:commandButton value="#{msg['btn.save']}" action="#{workoutSessionController.saveSession()}"
